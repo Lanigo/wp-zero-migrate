@@ -48,12 +48,29 @@ function wpzm_handle_export_action() {
         );
 	}
 
-	// If everything is valid, return a success result.
-	return array(
+	// Define export directory path.
+    $export_dir = WP_CONTENT_DIR . '/wpzm-exports';
+
+    // If the directory does not exist, create it.
+    if (!file_exists($export_dir)) {
+	    wp_mkdir_p($export_dir);
+    }
+
+    // Check if directory now exists.
+    if (!file_exists($export_dir)) {
+	    return array(
+		    'action'  => 'export',
+		    'type'    => 'error',
+		    'message' => 'Failed to create export directory.',
+	    );
+    }
+
+    // Success: directory is ready.
+    return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export button clicked.',
-);
+	    'message' => 'Export directory ready: ' . $export_dir,
+    );
 }
 
 function wpzm_render_admin_page() {
