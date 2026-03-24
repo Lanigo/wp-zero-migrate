@@ -82,6 +82,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Created: " . $timestamp . "\n";
 	$info_content .= "Site Name: " . get_bloginfo('name') . "\n";
 	$info_content .= "Site URL: " . home_url() . "\n";
+	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
