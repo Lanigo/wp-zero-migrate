@@ -83,6 +83,42 @@ function wpzm_handle_export_action() {
 	// Get upload directory information.
 	$upload_dir = wp_upload_dir();
 
+	// Build structured export data for JSON.
+	$manifest_data = array(
+		'timestamp'        => $timestamp,
+		'site_name'        => get_bloginfo('name'),
+		'site_url'         => home_url(),
+		'database_name'    => DB_NAME,
+		'database_prefix'  => $GLOBALS['wpdb']->prefix,
+		'wp_version'       => get_bloginfo('version'),
+		'php_version'      => PHP_VERSION,
+		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+		'locale'           => get_locale(),
+		'theme' => array(
+			'name'       => wp_get_theme()->get('Name'),
+			'stylesheet' => wp_get_theme()->get_stylesheet(),
+		),
+		'uploads' => array(
+			'basedir' => $upload_dir['basedir'],
+			'baseurl' => $upload_dir['baseurl'],
+			'subdir'  => $upload_dir['subdir'],
+		),
+		'plugins' => $active_plugins,
+	);
+
+	// Convert the array to JSON.
+	$manifest_json = json_encode($manifest_data, JSON_PRETTY_PRINT);
+	$manifest_file = $export_path . '/manifest.json';
+	$manifest_written = file_put_contents($manifest_file, $manifest_json);
+
+	if ($manifest_written === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to write manifest.json file.',
+		);
+	}
+
 	// Create the text content we want to save in the file.
 	$info_content = "WP Zero Migrate Export\n";
 	$info_content .= "Created: " . $timestamp . "\n";
@@ -126,7 +162,7 @@ function wpzm_handle_export_action() {
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder and export-info.txt created: ' . $export_path,
+	    'message' => 'Export folder, info file, and manifest.json created: ' . $export_path,
     );
 }
 
