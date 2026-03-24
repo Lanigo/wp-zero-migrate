@@ -74,11 +74,30 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Build the path for a simple export info file.
+	$info_file = $export_path . '/export-info.txt';
+
+	// Create the text content we want to save in the file.
+	$info_content = "WP Zero Migrate Export\n";
+	$info_content .= "Created: " . $timestamp . "\n";
+
+	// Write the content to the file.
+	$file_written = file_put_contents($info_file, $info_content);
+
+	// If writing failed, return an error.
+	if ($file_written === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Export folder was created, but export-info.txt could not be written.',
+		);
+	}
+
     // Success: directory is ready.
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder created: ' . $export_path,
+	    'message' => 'Export folder and export-info.txt created: ' . $export_path,
     );
 }
 
