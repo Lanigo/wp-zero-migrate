@@ -12,7 +12,7 @@
 defined('ABSPATH') || exit;
 
 // Register a custom top-level admin menu item in the WordPress dashboard.
-// I'm are not running this function myself right here.
+// I'm not running this function myself right here.
 // I'm defining it first, then telling WordPress later when to run it.
 function wpzm_register_admin_menu() {
 
@@ -51,25 +51,34 @@ function wpzm_handle_export_action() {
 	// Define export directory path.
     $export_dir = WP_CONTENT_DIR . '/wpzm-exports';
 
-    // If the directory does not exist, create it.
-    if (!file_exists($export_dir)) {
-	    wp_mkdir_p($export_dir);
-    }
+	// Create a unique timestamp for this export.
+	$timestamp = date('Y-m-d-H-i-s');
+	$export_path = $export_dir . '/export-' . $timestamp;
 
-    // Check if directory now exists.
-    if (!file_exists($export_dir)) {
-	    return array(
-		    'action'  => 'export',
-		    'type'    => 'error',
-		    'message' => 'Failed to create export directory.',
-	    );
-    }
+    // Ensure base export directory exists.
+	if (!file_exists($export_dir)) {
+		wp_mkdir_p($export_dir);
+	}
+
+	// Create this specific export folder.
+	if (!file_exists($export_path)) {
+		wp_mkdir_p($export_path);
+	}
+
+	// Verify it was created.
+	if (!file_exists($export_path)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to create export folder.',
+		);
+	}
 
     // Success: directory is ready.
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export directory ready: ' . $export_dir,
+	    'message' => 'Export folder created: ' . $export_path,
     );
 }
 
