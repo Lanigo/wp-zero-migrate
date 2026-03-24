@@ -89,6 +89,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Site Name: " . get_bloginfo('name') . "\n";
 	$info_content .= "Site URL: " . home_url() . "\n";
 	$info_content .= "Database Name: " . DB_NAME . "\n";
+	$info_content .= "Database Prefix: " . $GLOBALS['wpdb']->prefix . "\n";
 	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
