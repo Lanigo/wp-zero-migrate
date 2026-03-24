@@ -89,6 +89,11 @@ function wpzm_handle_export_action() {
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
 	$info_content .= "Active Plugins: " . count($active_plugins) . "\n";
+	$info_content .= "Plugin List:\n";
+
+	foreach ($active_plugins as $plugin) {
+		$info_content .= " - " . $plugin . "\n";
+	}	
 
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
