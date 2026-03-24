@@ -95,6 +95,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
+	$info_content .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
 	$info_content .= "Theme Stylesheet: " . wp_get_theme()->get_stylesheet() . "\n";
 	$info_content .= "Active Plugins: " . count($active_plugins) . "\n";
