@@ -99,6 +99,10 @@ function wpzm_handle_export_action() {
 	$info_content .= "Locale: " . get_locale() . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
 	$info_content .= "Theme Stylesheet: " . wp_get_theme()->get_stylesheet() . "\n";
+	$info_content .= "\n";
+	$info_content .= "--------------------\n";
+	$info_content .= "Plugins\n";
+	$info_content .= "--------------------\n";
 	$info_content .= "Active Plugins: " . count($active_plugins) . "\n";
 	$info_content .= "Plugin List:\n";
 
