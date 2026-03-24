@@ -77,6 +77,9 @@ function wpzm_handle_export_action() {
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
+	// Get the list of active plugins from the database.
+	$active_plugins = get_option('active_plugins', array());
+
 	// Create the text content we want to save in the file.
 	$info_content = "WP Zero Migrate Export\n";
 	$info_content .= "Created: " . $timestamp . "\n";
@@ -85,6 +88,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
+	$info_content .= "Active Plugins: " . count($active_plugins) . "\n";
 
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
