@@ -80,6 +80,8 @@ function wpzm_handle_export_action() {
 	// Create the text content we want to save in the file.
 	$info_content = "WP Zero Migrate Export\n";
 	$info_content .= "Created: " . $timestamp . "\n";
+	$info_content .= "Site Name: " . get_bloginfo('name') . "\n";
+	$info_content .= "Site URL: " . home_url() . "\n";
 
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
