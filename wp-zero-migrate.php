@@ -80,11 +80,15 @@ function wpzm_handle_export_action() {
 	// Get the list of active plugins from the database.
 	$active_plugins = get_option('active_plugins', array());
 
+	// Get upload directory information.
+	$upload_dir = wp_upload_dir();
+
 	// Create the text content we want to save in the file.
 	$info_content = "WP Zero Migrate Export\n";
 	$info_content .= "Created: " . $timestamp . "\n";
 	$info_content .= "Site Name: " . get_bloginfo('name') . "\n";
 	$info_content .= "Site URL: " . home_url() . "\n";
+	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
