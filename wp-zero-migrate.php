@@ -177,6 +177,28 @@ function wpzm_handle_export_action() {
 
 	$database_content .= $table_sql;
 
+	$posts_table = $GLOBALS['wpdb']->prefix . 'posts';
+
+	$table_sql = wpzm_export_table_sql($posts_table);
+
+	if ($table_sql === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to export table: ' . $posts_table,
+		);
+	}
+
+	if (empty($table_sql)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Table SQL came back empty for: ' . $posts_table,
+		);
+	}
+
+	$database_content .= $table_sql;
+
 	$database_written = file_put_contents($database_file, $database_content);
 
 	if ($database_written === false) {
