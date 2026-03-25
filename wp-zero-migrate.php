@@ -286,7 +286,18 @@ function wpzm_export_table_sql($table_name) {
 	$sql_content .= "-- Inserting data for table: " . $table_name . "\n";
 
 	// Get table rows.
-	$rows = $wpdb->get_results("SELECT * FROM `$table_name`", ARRAY_A);
+	if ($table_name === $wpdb->prefix . 'options') {
+		$rows = $wpdb->get_results(
+			"SELECT * FROM `$table_name`
+			WHERE option_name NOT LIKE '\_transient\_%'
+			AND option_name NOT LIKE '\_site\_transient\_%'
+			AND option_name NOT LIKE '\_transient\_timeout\_%'
+			AND option_name NOT LIKE '\_site\_transient\_timeout\_%'",
+			ARRAY_A
+		);
+	} else {
+		$rows = $wpdb->get_results("SELECT * FROM `$table_name`", ARRAY_A);
+	}
 
 	foreach ($rows as $row) {
 
