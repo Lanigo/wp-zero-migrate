@@ -151,9 +151,29 @@ function wpzm_handle_export_action() {
 		$info_content .= " - " . $plugin . "\n";
 	}	
 
-	// Create placeholder SQL content for the future database export.
-	$database_content = "-- WP Zero Migrate database export placeholder\n";
-	$database_content .= "-- Created: " . $timestamp . "\n";
+	// Start SQL export content.
+	$database_content = "-- WP Zero Migrate database export\n";
+	$database_content .= "-- Created: " . $timestamp . "\n\n";
+
+	// Get the options table name.
+	$options_table = $GLOBALS['wpdb']->prefix . 'options';
+
+	// Fetch all rows from the options table.
+	$options_rows = $GLOBALS['wpdb']->get_results("SELECT * FROM $options_table", ARRAY_A);
+
+	// Loop through each row and build INSERT statements.
+	foreach ($options_rows as $row) {
+
+		$columns = array();
+		$values  = array();
+
+		foreach ($row as $column => $value) {
+			$columns[] = "`" . $column . "`";
+			$values[]  = "'" . esc_sql($value) . "'";
+		}
+
+		$database_content .= "INSERT INTO `$options_table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+	}
 
 	$database_written = file_put_contents($database_file, $database_content);
 
