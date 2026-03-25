@@ -229,6 +229,20 @@ function wpzm_handle_export_action() {
     );
 }
 
+// Convert a PHP value into a basic SQL-safe literal.
+function wpzm_format_sql_value($value) {
+
+	if (is_null($value)) {
+		return 'NULL';
+	}
+
+	if (is_int($value) || is_float($value)) {
+		return (string) $value;
+	}
+
+	return "'" . addslashes((string) $value) . "'";
+}
+
 function wpzm_render_admin_page() {
 	// Ask my helper function whether there is any export result to show.
 	$result = wpzm_handle_export_action();
@@ -293,7 +307,7 @@ function wpzm_export_table_sql($table_name) {
 
 		foreach ($row as $column => $value) {
 			$columns[] = "`" . $column . "`";
-			$values[]  = "'" . addslashes((string) $value) . "'";
+			$values[]  = wpzm_format_sql_value($value);
 		}
 
 		$sql_content .= "INSERT INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
