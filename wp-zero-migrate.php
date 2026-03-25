@@ -155,43 +155,27 @@ function wpzm_handle_export_action() {
 	$database_content = "-- WP Zero Migrate database export\n";
 	$database_content .= "-- Created: " . $timestamp . "\n\n";
 
-	// Get the options table name.
 	$options_table = $GLOBALS['wpdb']->prefix . 'options';
 
-	// Fetch all rows from the options table.
-	$options_rows = $GLOBALS['wpdb']->get_results("SELECT * FROM $options_table", ARRAY_A);
+	$table_sql = wpzm_export_table_sql($options_table);
 
-	// Get the table structure SQL.
-	$table_structure = $GLOBALS['wpdb']->get_row("SHOW CREATE TABLE `$options_table`", ARRAY_A);
-
-	if (empty($table_structure['Create Table'])) {
+	if ($table_sql === false) {
 		return array(
 			'action'  => 'export',
 			'type'    => 'error',
-			'message' => 'Failed to retrieve table structure for ' . $options_table,
+			'message' => 'Failed to export table: ' . $options_table,
 		);
 	}
 
-	$database_content .= "-- Exporting table: " . $options_table . "\n";
-	$database_content .= "DROP TABLE IF EXISTS `$options_table`;\n";
-	$database_content .= $table_structure['Create Table'] . ";\n";
-	$database_content .= "\n";
-
-	// Loop through each row and build INSERT statements.
-	foreach ($options_rows as $row) {
-
-		$columns = array();
-		$values  = array();
-
-		foreach ($row as $column => $value) {
-			$columns[] = "`" . $column . "`";
-			$values[]  = "'" . esc_sql($value) . "'";
-		}
-
-		$database_content .= "INSERT INTO `$options_table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+	if (empty($table_sql)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Table SQL came back empty for: ' . $options_table,
+		);
 	}
 
-	$database_content .= "\n";
+	$database_content .= $table_sql;
 
 	$database_written = file_put_contents($database_file, $database_content);
 
@@ -254,3 +238,46 @@ function wpzm_render_admin_page() {
 // Meaning:
 // "When WordPress is building the admin menu, also run wpzm_register_admin_menu."
 add_action('admin_menu', 'wpzm_register_admin_menu');
+
+// Export a single database table to SQL format.
+function wpzm_export_table_sql($table_name) {
+
+	global $wpdb;
+
+	$sql_content = '';
+
+	// Get table structure.
+	$table_structure = $wpdb->get_row("SHOW CREATE TABLE `$table_name`", ARRAY_A);
+
+	if (empty($table_structure['Create Table'])) {
+		return false;
+	}
+
+	// Add structure section.
+	$sql_content .= "-- Exporting table: " . $table_name . "\n";
+	$sql_content .= "DROP TABLE IF EXISTS `$table_name`;\n";
+	$sql_content .= $table_structure['Create Table'] . ";\n\n";
+
+	// Add insert section header.
+	$sql_content .= "-- Inserting data for table: " . $table_name . "\n";
+
+	// Get table rows.
+	$rows = $wpdb->get_results("SELECT * FROM `$table_name`", ARRAY_A);
+
+	foreach ($rows as $row) {
+
+		$columns = array();
+		$values  = array();
+
+		foreach ($row as $column => $value) {
+			$columns[] = "`" . $column . "`";
+			$values[]  = "'" . addslashes((string) $value) . "'";
+		}
+
+		$sql_content .= "INSERT INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+	}
+
+	$sql_content .= "\n";
+
+	return $sql_content;
+}
