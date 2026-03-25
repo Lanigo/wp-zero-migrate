@@ -161,6 +161,8 @@ function wpzm_handle_export_action() {
 	// Fetch all rows from the options table.
 	$options_rows = $GLOBALS['wpdb']->get_results("SELECT * FROM $options_table", ARRAY_A);
 
+	$database_content .= "-- Exporting table: " . $options_table . "\n";
+
 	// Loop through each row and build INSERT statements.
 	foreach ($options_rows as $row) {
 
@@ -174,6 +176,8 @@ function wpzm_handle_export_action() {
 
 		$database_content .= "INSERT INTO `$options_table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
 	}
+
+	$database_content .= "\n";
 
 	$database_written = file_put_contents($database_file, $database_content);
 
