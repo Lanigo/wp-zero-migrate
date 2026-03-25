@@ -155,49 +155,36 @@ function wpzm_handle_export_action() {
 	$database_content = "-- WP Zero Migrate database export\n";
 	$database_content .= "-- Created: " . $timestamp . "\n\n";
 
-	$options_table = $GLOBALS['wpdb']->prefix . 'options';
 
-	$table_sql = wpzm_export_table_sql($options_table);
+// Define which tables to export.
+$tables_to_export = array(
+	$GLOBALS['wpdb']->prefix . 'options',
+	$GLOBALS['wpdb']->prefix . 'posts',
+);
 
-	if ($table_sql === false) {
-		return array(
-			'action'  => 'export',
-			'type'    => 'error',
-			'message' => 'Failed to export table: ' . $options_table,
-		);
+	// Export each table in order.
+	foreach ($tables_to_export as $table_name) {
+
+		$table_sql = wpzm_export_table_sql($table_name);
+
+		if ($table_sql === false) {
+			return array(
+				'action'  => 'export',
+				'type'    => 'error',
+				'message' => 'Failed to export table: ' . $table_name,
+			);
+		}
+
+		if (empty($table_sql)) {
+			return array(
+				'action'  => 'export',
+				'type'    => 'error',
+				'message' => 'Table SQL came back empty for: ' . $table_name,
+			);
+		}
+
+		$database_content .= $table_sql;
 	}
-
-	if (empty($table_sql)) {
-		return array(
-			'action'  => 'export',
-			'type'    => 'error',
-			'message' => 'Table SQL came back empty for: ' . $options_table,
-		);
-	}
-
-	$database_content .= $table_sql;
-
-	$posts_table = $GLOBALS['wpdb']->prefix . 'posts';
-
-	$table_sql = wpzm_export_table_sql($posts_table);
-
-	if ($table_sql === false) {
-		return array(
-			'action'  => 'export',
-			'type'    => 'error',
-			'message' => 'Failed to export table: ' . $posts_table,
-		);
-	}
-
-	if (empty($table_sql)) {
-		return array(
-			'action'  => 'export',
-			'type'    => 'error',
-			'message' => 'Table SQL came back empty for: ' . $posts_table,
-		);
-	}
-
-	$database_content .= $table_sql;
 
 	$database_written = file_put_contents($database_file, $database_content);
 
