@@ -162,6 +162,7 @@ $tables_to_export = array(
 	$GLOBALS['wpdb']->prefix . 'posts',
 	$GLOBALS['wpdb']->prefix . 'postmeta',
 	$GLOBALS['wpdb']->prefix . 'users',
+	$GLOBALS['wpdb']->prefix . 'usermeta',
 );
 
 	// Export each table in order.
