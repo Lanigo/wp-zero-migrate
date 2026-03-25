@@ -83,6 +83,9 @@ function wpzm_handle_export_action() {
 	// Get upload directory information.
 	$upload_dir = wp_upload_dir();
 
+	// Prepare the future database export file path.
+	$database_file = $export_path . '/database.sql';
+
 	// Build structured export data for JSON.
 	$manifest_data = array(
 		'timestamp'        => $timestamp,
@@ -90,6 +93,7 @@ function wpzm_handle_export_action() {
 		'site_url'         => home_url(),
 		'database_name'    => DB_NAME,
 		'database_prefix'  => $GLOBALS['wpdb']->prefix,
+		'database_file'    => $database_file,
 		'wp_version'       => get_bloginfo('version'),
 		'php_version'      => PHP_VERSION,
 		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
@@ -126,6 +130,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Site URL: " . home_url() . "\n";
 	$info_content .= "Database Name: " . DB_NAME . "\n";
 	$info_content .= "Database Prefix: " . $GLOBALS['wpdb']->prefix . "\n";
+	$info_content .= "Database Export File: " . $database_file . "\n";
 	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
