@@ -161,8 +161,20 @@ function wpzm_handle_export_action() {
 	// Fetch all rows from the options table.
 	$options_rows = $GLOBALS['wpdb']->get_results("SELECT * FROM $options_table", ARRAY_A);
 
+	// Get the table structure SQL.
+	$table_structure = $GLOBALS['wpdb']->get_row("SHOW CREATE TABLE `$options_table`", ARRAY_A);
+
+	if (empty($table_structure['Create Table'])) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to retrieve table structure for ' . $options_table,
+		);
+	}
+
 	$database_content .= "-- Exporting table: " . $options_table . "\n";
 	$database_content .= "DROP TABLE IF EXISTS `$options_table`;\n";
+	$database_content .= $table_structure['Create Table'] . ";\n";
 	$database_content .= "\n";
 
 	// Loop through each row and build INSERT statements.
