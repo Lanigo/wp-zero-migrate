@@ -160,6 +160,7 @@ function wpzm_handle_export_action() {
 $tables_to_export = array(
 	$GLOBALS['wpdb']->prefix . 'options',
 	$GLOBALS['wpdb']->prefix . 'posts',
+	$GLOBALS['wpdb']->prefix . 'postmeta',
 );
 
 	// Export each table in order.
