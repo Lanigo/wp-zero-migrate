@@ -151,6 +151,20 @@ function wpzm_handle_export_action() {
 		$info_content .= " - " . $plugin . "\n";
 	}	
 
+	// Create placeholder SQL content for the future database export.
+	$database_content = "-- WP Zero Migrate database export placeholder\n";
+	$database_content .= "-- Created: " . $timestamp . "\n";
+
+	$database_written = file_put_contents($database_file, $database_content);
+
+	if ($database_written === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to write database.sql placeholder file.',
+		);
+	}
+
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
 
@@ -167,7 +181,7 @@ function wpzm_handle_export_action() {
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder, info file, and manifest.json created: ' . $export_path,
+	    'message' => 'Export folder, info file, manifest.json, and database.sql created: ' . $export_path,
     );
 }
 
