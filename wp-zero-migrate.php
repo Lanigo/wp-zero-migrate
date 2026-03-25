@@ -162,6 +162,8 @@ function wpzm_handle_export_action() {
 	$options_rows = $GLOBALS['wpdb']->get_results("SELECT * FROM $options_table", ARRAY_A);
 
 	$database_content .= "-- Exporting table: " . $options_table . "\n";
+	$database_content .= "DROP TABLE IF EXISTS `$options_table`;\n";
+	$database_content .= "\n";
 
 	// Loop through each row and build INSERT statements.
 	foreach ($options_rows as $row) {
