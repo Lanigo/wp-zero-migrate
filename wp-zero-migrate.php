@@ -55,6 +55,12 @@ function wpzm_handle_export_action() {
 	$timestamp = date('Y-m-d-H-i-s');
 	$export_path = $export_dir . '/export-' . $timestamp;
 
+	// Prepare the future database export file path.
+	$database_file = $export_path . '/database.sql';
+
+	// Prepare the future file export directory path.
+	$files_export_dir = $export_path . '/files';
+
     // Ensure base export directory exists.
 	if (!file_exists($export_dir)) {
 		wp_mkdir_p($export_dir);
@@ -74,6 +80,19 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Create the files export directory.
+	if (!file_exists($files_export_dir)) {
+		wp_mkdir_p($files_export_dir);
+	}
+
+	if (!file_exists($files_export_dir)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to create files export directory.',
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
@@ -83,9 +102,6 @@ function wpzm_handle_export_action() {
 	// Get upload directory information.
 	$upload_dir = wp_upload_dir();
 
-	// Prepare the future database export file path.
-	$database_file = $export_path . '/database.sql';
-
 	// Build structured export data for JSON.
 	$manifest_data = array(
 		'timestamp'        => $timestamp,
@@ -94,6 +110,7 @@ function wpzm_handle_export_action() {
 		'database_name'    => DB_NAME,
 		'database_prefix'  => $GLOBALS['wpdb']->prefix,
 		'database_file'    => $database_file,
+		'files_export_dir' => $files_export_dir,
 		'wp_version'       => get_bloginfo('version'),
 		'php_version'      => PHP_VERSION,
 		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
@@ -132,6 +149,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Database Prefix: " . $GLOBALS['wpdb']->prefix . "\n";
 	$info_content .= "Database Export File: " . $database_file . "\n";
 	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
+	$info_content .= "Files Export Directory: " . $files_export_dir . "\n";
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
@@ -220,7 +238,7 @@ $tables_to_export = array(
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder, info file, manifest.json, and database.sql created: ' . $export_path,
+	    'message' => 'Export folder, files directory, info file, manifest.json, and database.sql created: ' . $export_path,
     );
 }
 
