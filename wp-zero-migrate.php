@@ -110,6 +110,17 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Calculate the size of the copied uploads directory.
+	$uploads_export_size = wpzm_get_directory_size($uploads_export_dir);
+
+	if ($uploads_export_size === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to calculate uploads export size.',
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
@@ -126,6 +137,7 @@ function wpzm_handle_export_action() {
 		'database_file'    => $database_file,
 		'files_export_dir' => $files_export_dir,
 		'uploads_copied'   => $uploads_copied,
+		'uploads_export_size' => $uploads_export_size,
 		'wp_version'       => get_bloginfo('version'),
 		'php_version'      => PHP_VERSION,
 		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
@@ -170,6 +182,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
 	$info_content .= "Uploads Export Directory: " . $uploads_export_dir . "\n";
 	$info_content .= "Uploads Copied: " . ($uploads_copied ? 'Yes' : 'No') . "\n";
+	$info_content .= "Uploads Export Size (bytes): " . $uploads_export_size . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
@@ -314,6 +327,44 @@ function wpzm_copy_directory($source, $destination) {
 	}
 
 	return true;
+}
+
+// Recursively calculate the total size of a directory.
+function wpzm_get_directory_size($directory) {
+
+	if (!is_dir($directory)) {
+		return false;
+	}
+
+	$total_size = 0;
+	$items = scandir($directory);
+
+	if ($items === false) {
+		return false;
+	}
+
+	foreach ($items as $item) {
+
+		if ($item === '.' || $item === '..') {
+			continue;
+		}
+
+		$item_path = $directory . '/' . $item;
+
+		if (is_dir($item_path)) {
+			$subdirectory_size = wpzm_get_directory_size($item_path);
+
+			if ($subdirectory_size === false) {
+				return false;
+			}
+
+			$total_size += $subdirectory_size;
+		} else {
+			$total_size += filesize($item_path);
+		}
+	}
+
+	return $total_size;
 }
 
 function wpzm_render_admin_page() {
