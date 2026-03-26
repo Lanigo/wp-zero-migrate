@@ -125,6 +125,7 @@ function wpzm_handle_export_action() {
 		'database_prefix'  => $GLOBALS['wpdb']->prefix,
 		'database_file'    => $database_file,
 		'files_export_dir' => $files_export_dir,
+		'uploads_copied'   => $uploads_copied,
 		'wp_version'       => get_bloginfo('version'),
 		'php_version'      => PHP_VERSION,
 		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
@@ -168,6 +169,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
 	$info_content .= "Uploads Export Directory: " . $uploads_export_dir . "\n";
+	$info_content .= "Uploads Copied: " . ($uploads_copied ? 'Yes' : 'No') . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
