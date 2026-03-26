@@ -61,6 +61,12 @@ function wpzm_handle_export_action() {
 	// Prepare the future file export directory path.
 	$files_export_dir = $export_path . '/files';
 
+	// Prepare the future uploads directory path.
+	$uploads_export_dir = $files_export_dir . '/uploads';
+
+	// Get upload directory information.
+	$upload_dir = wp_upload_dir();
+
     // Ensure base export directory exists.
 	if (!file_exists($export_dir)) {
 		wp_mkdir_p($export_dir);
@@ -93,14 +99,22 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Copy the uploads directory into the export package.
+	$uploads_copied = wpzm_copy_directory($upload_dir['basedir'], $uploads_export_dir);
+
+	if ($uploads_copied === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to copy uploads directory.',
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
 	// Get the list of active plugins from the database.
 	$active_plugins = get_option('active_plugins', array());
-
-	// Get upload directory information.
-	$upload_dir = wp_upload_dir();
 
 	// Build structured export data for JSON.
 	$manifest_data = array(
@@ -123,6 +137,7 @@ function wpzm_handle_export_action() {
 			'basedir' => $upload_dir['basedir'],
 			'baseurl' => $upload_dir['baseurl'],
 			'subdir'  => $upload_dir['subdir'],
+			'export_dir' => $uploads_export_dir,
 		),
 		'plugins' => $active_plugins,
 	);
@@ -148,10 +163,11 @@ function wpzm_handle_export_action() {
 	$info_content .= "Database Name: " . DB_NAME . "\n";
 	$info_content .= "Database Prefix: " . $GLOBALS['wpdb']->prefix . "\n";
 	$info_content .= "Database Export File: " . $database_file . "\n";
-	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "Files Export Directory: " . $files_export_dir . "\n";
+	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
+	$info_content .= "Uploads Export Directory: " . $uploads_export_dir . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
@@ -238,7 +254,7 @@ $tables_to_export = array(
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder, files directory, info file, manifest.json, and database.sql created: ' . $export_path,
+	    'message' => 'Export folder, files directory, uploads copy, info file, manifest.json, and database.sql created: ' . $export_path,
     );
 }
 
@@ -254,6 +270,48 @@ function wpzm_format_sql_value($value) {
 	}
 
 	return "'" . addslashes((string) $value) . "'";
+}
+
+// Recursively copy a directory and its contents.
+function wpzm_copy_directory($source, $destination) {
+
+	if (!is_dir($source)) {
+		return false;
+	}
+
+	if (!file_exists($destination)) {
+		wp_mkdir_p($destination);
+	}
+
+	$items = scandir($source);
+
+	if ($items === false) {
+		return false;
+	}
+
+	foreach ($items as $item) {
+
+		if ($item === '.' || $item === '..') {
+			continue;
+		}
+
+		$source_path = $source . '/' . $item;
+		$destination_path = $destination . '/' . $item;
+
+		if (is_dir($source_path)) {
+			$result = wpzm_copy_directory($source_path, $destination_path);
+
+			if ($result === false) {
+				return false;
+			}
+		} else {
+			if (!copy($source_path, $destination_path)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 function wpzm_render_admin_page() {
