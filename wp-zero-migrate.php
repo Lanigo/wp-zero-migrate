@@ -121,6 +121,17 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Count the number of files copied into the uploads export directory.
+	$uploads_file_count = wpzm_count_files_in_directory($uploads_export_dir);
+
+	if ($uploads_file_count === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to count files in uploads export directory.',
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
@@ -138,6 +149,7 @@ function wpzm_handle_export_action() {
 		'files_export_dir' => $files_export_dir,
 		'uploads_copied'   => $uploads_copied,
 		'uploads_export_size' => $uploads_export_size,
+		'uploads_file_count'  => $uploads_file_count,
 		'wp_version'       => get_bloginfo('version'),
 		'php_version'      => PHP_VERSION,
 		'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
@@ -183,6 +195,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Uploads Export Directory: " . $uploads_export_dir . "\n";
 	$info_content .= "Uploads Copied: " . ($uploads_copied ? 'Yes' : 'No') . "\n";
 	$info_content .= "Uploads Export Size (bytes): " . $uploads_export_size . "\n";
+	$info_content .= "Uploads File Count: " . $uploads_file_count . "\n";
 	$info_content .= "WordPress Version: " . get_bloginfo('version') . "\n";
 	$info_content .= "PHP Version: " . PHP_VERSION . "\n";
 	$info_content .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
@@ -365,6 +378,44 @@ function wpzm_get_directory_size($directory) {
 	}
 
 	return $total_size;
+}
+
+// Recursively count the number of files in a directory.
+function wpzm_count_files_in_directory($directory) {
+
+	if (!is_dir($directory)) {
+		return false;
+	}
+
+	$file_count = 0;
+	$items = scandir($directory);
+
+	if ($items === false) {
+		return false;
+	}
+
+	foreach ($items as $item) {
+
+		if ($item === '.' || $item === '..') {
+			continue;
+		}
+
+		$item_path = $directory . '/' . $item;
+
+		if (is_dir($item_path)) {
+			$subdirectory_count = wpzm_count_files_in_directory($item_path);
+
+			if ($subdirectory_count === false) {
+				return false;
+			}
+
+			$file_count += $subdirectory_count;
+		} else {
+			$file_count++;
+		}
+	}
+
+	return $file_count;
 }
 
 function wpzm_render_admin_page() {
