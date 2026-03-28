@@ -67,6 +67,9 @@ function wpzm_handle_export_action() {
 	// Get upload directory information.
 	$upload_dir = wp_upload_dir();
 
+	// Prepare the future zip export file path.
+	$zip_export_file = $export_path . '/export-package.zip';
+
     // Ensure base export directory exists.
 	if (!file_exists($export_dir)) {
 		wp_mkdir_p($export_dir);
@@ -147,6 +150,7 @@ function wpzm_handle_export_action() {
 		'database_prefix'  => $GLOBALS['wpdb']->prefix,
 		'database_file'    => $database_file,
 		'files_export_dir' => $files_export_dir,
+		'zip_export_file'     => $zip_export_file,
 		'uploads_copied'   => $uploads_copied,
 		'uploads_export_size' => $uploads_export_size,
 		'uploads_file_count'  => $uploads_file_count,
@@ -189,6 +193,7 @@ function wpzm_handle_export_action() {
 	$info_content .= "Database Prefix: " . $GLOBALS['wpdb']->prefix . "\n";
 	$info_content .= "Database Export File: " . $database_file . "\n";
 	$info_content .= "Files Export Directory: " . $files_export_dir . "\n";
+	$info_content .= "Zip Export File: " . $zip_export_file . "\n";
 	$info_content .= "Upload Base Directory: " . $upload_dir['basedir'] . "\n";
 	$info_content .= "Upload Base URL: " . $upload_dir['baseurl'] . "\n";
 	$info_content .= "Current Upload Subdirectory: " . $upload_dir['subdir'] . "\n";
