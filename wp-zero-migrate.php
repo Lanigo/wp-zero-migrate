@@ -454,33 +454,45 @@ function wpzm_create_zip_archive($zip_file, $export_path, $files_to_include) {
 		return false;
 	}
 
+	$normalized_export_path = wp_normalize_path($export_path);
+
 	foreach ($files_to_include as $item) {
 
 		if (!file_exists($item)) {
 			continue;
 		}
 
-		// If it's a file, add it directly.
+		// Add a single file.
 		if (is_file($item)) {
-			$local_name = str_replace($export_path . '/', '', $item);
-			$zip->addFile($item, $local_name);
+			$normalized_item = wp_normalize_path($item);
+			$local_name = str_replace($normalized_export_path . '/', '', $normalized_item);
+			$zip->addFile($normalized_item, $local_name);
 			continue;
 		}
 
-		// If it's a directory, walk through it recursively.
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($item, RecursiveDirectoryIterator::SKIP_DOTS),
-			RecursiveIteratorIterator::LEAVES_ONLY
-		);
+		// Add a directory and its contents.
+		if (is_dir($item)) {
+			$normalized_item = wp_normalize_path($item);
+			$local_dir = str_replace($normalized_export_path . '/', '', $normalized_item);
 
-		foreach ($iterator as $file) {
-			if ($file->isDir()) {
-				continue;
+			// Add the directory itself so empty folders are preserved.
+			$zip->addEmptyDir($local_dir);
+
+			$iterator = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator($item, RecursiveDirectoryIterator::SKIP_DOTS),
+				RecursiveIteratorIterator::SELF_FIRST
+			);
+
+			foreach ($iterator as $file) {
+				$file_path = wp_normalize_path($file->getPathname());
+				$local_name = str_replace($normalized_export_path . '/', '', $file_path);
+
+				if ($file->isDir()) {
+					$zip->addEmptyDir($local_name);
+				} else {
+					$zip->addFile($file_path, $local_name);
+				}
 			}
-
-			$file_path = $file->getRealPath();
-			$local_name = str_replace($export_path . '/', '', $file_path);
-			$zip->addFile($file_path, $local_name);
 		}
 	}
 
