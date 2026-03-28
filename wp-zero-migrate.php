@@ -274,6 +274,24 @@ $tables_to_export = array(
 	// Write the content to the file.
 	$file_written = file_put_contents($info_file, $info_content);
 
+	// Define which export artifacts should go into the zip package.
+	$zip_items = array(
+		$info_file,
+		$manifest_file,
+		$database_file,
+		$files_export_dir,
+	);
+
+	$zip_created = wpzm_create_zip_archive($zip_export_file, $export_path, $zip_items);
+
+	if ($zip_created === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to create export-package.zip.',
+		);
+	}
+
 	// If writing failed, return an error.
 	if ($file_written === false) {
 		return array(
@@ -287,7 +305,7 @@ $tables_to_export = array(
     return array(
 	    'action'  => 'export',
 	    'type'    => 'success',
-	    'message' => 'Export folder, files directory, uploads copy, info file, manifest.json, and database.sql created: ' . $export_path,
+	    'message' => 'Export folder, files, metadata, database.sql, and export-package.zip created: ' . $export_path,
     );
 }
 
@@ -421,6 +439,54 @@ function wpzm_count_files_in_directory($directory) {
 	}
 
 	return $file_count;
+}
+
+// Create a zip archive from a directory and selected files.
+function wpzm_create_zip_archive($zip_file, $export_path, $files_to_include) {
+
+	if (!class_exists('ZipArchive')) {
+		return false;
+	}
+
+	$zip = new ZipArchive();
+
+	if ($zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+		return false;
+	}
+
+	foreach ($files_to_include as $item) {
+
+		if (!file_exists($item)) {
+			continue;
+		}
+
+		// If it's a file, add it directly.
+		if (is_file($item)) {
+			$local_name = str_replace($export_path . '/', '', $item);
+			$zip->addFile($item, $local_name);
+			continue;
+		}
+
+		// If it's a directory, walk through it recursively.
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($item, RecursiveDirectoryIterator::SKIP_DOTS),
+			RecursiveIteratorIterator::LEAVES_ONLY
+		);
+
+		foreach ($iterator as $file) {
+			if ($file->isDir()) {
+				continue;
+			}
+
+			$file_path = $file->getRealPath();
+			$local_name = str_replace($export_path . '/', '', $file_path);
+			$zip->addFile($file_path, $local_name);
+		}
+	}
+
+	$zip->close();
+
+	return file_exists($zip_file);
 }
 
 function wpzm_render_admin_page() {
