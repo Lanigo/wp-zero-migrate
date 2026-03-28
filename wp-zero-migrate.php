@@ -292,6 +292,9 @@ $tables_to_export = array(
 		);
 	}
 
+	// Store the latest successful zip export path.
+	update_option('wpzm_latest_zip_export_file', $zip_export_file);
+
 	// If writing failed, return an error.
 	if ($file_written === false) {
 		return array(
@@ -504,6 +507,14 @@ function wpzm_create_zip_archive($zip_file, $export_path, $files_to_include) {
 function wpzm_render_admin_page() {
 	// Ask my helper function whether there is any export result to show.
 	$result = wpzm_handle_export_action();
+
+	$latest_zip_file = get_option('wpzm_latest_zip_export_file', '');
+
+	$latest_zip_url = '';
+
+	if (!empty($latest_zip_file) && file_exists($latest_zip_file)) {
+		$latest_zip_url = str_replace(WP_CONTENT_DIR, content_url(), $latest_zip_file);
+	}
 	?>
 
 	<div class="wrap">
@@ -525,6 +536,14 @@ function wpzm_render_admin_page() {
 	        </p>
         </form>
 	</div>
+
+		<?php if (!empty($latest_zip_url)) : ?>
+				<p>
+					<a href="<?php echo esc_url($latest_zip_url); ?>" class="button" download>
+						Download Latest Export
+					</a>
+				</p>
+		<?php endif; ?>
 	<?php
 }
 
