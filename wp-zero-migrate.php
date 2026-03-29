@@ -224,6 +224,27 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Calculate metrics for the exported active plugins directory.
+	$plugins_export_size = wpzm_get_directory_size($plugins_export_dir);
+
+	if ($plugins_export_size === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to calculate plugins export size.',
+		);
+	}
+
+	$plugins_file_count = wpzm_count_files_in_directory($plugins_export_dir);
+
+	if ($plugins_file_count === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to count files in plugins export directory.',
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
@@ -268,6 +289,8 @@ function wpzm_handle_export_action() {
 		'plugins' => array(
 			'active_plugin_paths'   => $active_plugin_paths,
 			'plugins_export_dir'    => $plugins_export_dir,
+			'export_size'           => $plugins_export_size,
+			'file_count'            => $plugins_file_count,
 			'exported_plugins'      => $active_plugin_export_results,
 		),
 	);
@@ -319,6 +342,8 @@ function wpzm_handle_export_action() {
 	$info_content .= "--------------------\n";
 	$info_content .= "Active Plugins: " . count($active_plugin_paths) . "\n";
 	$info_content .= "Plugins Export Directory: " . $plugins_export_dir . "\n";
+	$info_content .= "Plugins Export Size (bytes): " . $plugins_export_size . "\n";
+	$info_content .= "Plugins File Count: " . $plugins_file_count . "\n";
 	$info_content .= "Plugin List:\n";
 
 	foreach ($active_plugin_export_results as $plugin_result) {
