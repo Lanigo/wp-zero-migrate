@@ -149,6 +149,27 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Calculate metrics for the copied active theme directory.
+	$theme_export_size = wpzm_get_directory_size($active_theme_export_dir);
+
+	if ($theme_export_size === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to calculate active theme export size.',
+		);
+	}
+
+	$theme_file_count = wpzm_count_files_in_directory($active_theme_export_dir);
+
+	if ($theme_file_count === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to count files in active theme export directory.',
+		);
+	}
+
 	// Calculate the size of the copied uploads directory.
 	$uploads_export_size = wpzm_get_directory_size($uploads_export_dir);
 
@@ -230,7 +251,10 @@ function wpzm_handle_export_action() {
 			'name'       => wp_get_theme()->get('Name'),
 			'stylesheet' => wp_get_theme()->get_stylesheet(),
 			'source_dir'       => $active_theme_source_dir,
-			s'export_dir'       => $active_theme_export_dir,
+			'export_dir'       => $active_theme_export_dir,
+			'copied'           => $theme_copied,
+			'export_size'      => $theme_export_size,
+			'file_count'       => $theme_file_count,
 		),
 		'uploads' => array(
 			'basedir' => $upload_dir['basedir'],
@@ -238,6 +262,8 @@ function wpzm_handle_export_action() {
 			'subdir'  => $upload_dir['subdir'],
 			'export_dir' => $uploads_export_dir,
 			'copied'  => $theme_copied,
+			'export_size'      => $theme_export_size,
+			'file_count'       => $theme_file_count,
 		),
 		'plugins' => array(
 			'active_plugin_paths'   => $active_plugin_paths,
@@ -285,6 +311,8 @@ function wpzm_handle_export_action() {
 	$info_content .= "Theme Source Directory: " . $active_theme_source_dir . "\n";
 	$info_content .= "Theme Export Directory: " . $active_theme_export_dir . "\n";
 	$info_content .= "Theme Copied: " . ($theme_copied ? 'Yes' : 'No') . "\n";
+	$info_content .= "Theme Export Size (bytes): " . $theme_export_size . "\n";
+	$info_content .= "Theme File Count: " . $theme_file_count . "\n";
 	$info_content .= "\n";
 	$info_content .= "--------------------\n";
 	$info_content .= "Plugins\n";
