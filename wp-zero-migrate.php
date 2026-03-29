@@ -70,6 +70,13 @@ function wpzm_handle_export_action() {
 	// Prepare the future zip export file path.
 	$zip_export_file = $export_path . '/export-package.zip';
 
+	// Prepare the active theme export paths.
+	$theme = wp_get_theme();
+	$active_theme_stylesheet = $theme->get_stylesheet();
+	$active_theme_source_dir = get_theme_root() . '/' . $active_theme_stylesheet;
+	$themes_export_dir = $files_export_dir . '/themes';
+	$active_theme_export_dir = $themes_export_dir . '/' . $active_theme_stylesheet;
+
     // Ensure base export directory exists.
 	if (!file_exists($export_dir)) {
 		wp_mkdir_p($export_dir);
@@ -110,6 +117,17 @@ function wpzm_handle_export_action() {
 			'action'  => 'export',
 			'type'    => 'error',
 			'message' => 'Failed to copy uploads directory.',
+		);
+	}
+
+	// Copy the active theme directory into the export package.
+	$theme_copied = wpzm_copy_directory($active_theme_source_dir, $active_theme_export_dir);
+
+	if ($theme_copied === false) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to copy active theme directory.',
 		);
 	}
 
@@ -161,12 +179,15 @@ function wpzm_handle_export_action() {
 		'theme' => array(
 			'name'       => wp_get_theme()->get('Name'),
 			'stylesheet' => wp_get_theme()->get_stylesheet(),
+			'source_dir'       => $active_theme_source_dir,
+			s'export_dir'       => $active_theme_export_dir,
 		),
 		'uploads' => array(
 			'basedir' => $upload_dir['basedir'],
 			'baseurl' => $upload_dir['baseurl'],
 			'subdir'  => $upload_dir['subdir'],
 			'export_dir' => $uploads_export_dir,
+			'copied'  => $theme_copied,
 		),
 		'plugins' => $active_plugins,
 	);
@@ -207,6 +228,9 @@ function wpzm_handle_export_action() {
 	$info_content .= "Locale: " . get_locale() . "\n";
 	$info_content .= "Active Theme: " . wp_get_theme()->get('Name') . "\n";
 	$info_content .= "Theme Stylesheet: " . wp_get_theme()->get_stylesheet() . "\n";
+	$info_content .= "Theme Source Directory: " . $active_theme_source_dir . "\n";
+	$info_content .= "Theme Export Directory: " . $active_theme_export_dir . "\n";
+	$info_content .= "Theme Copied: " . ($theme_copied ? 'Yes' : 'No') . "\n";
 	$info_content .= "\n";
 	$info_content .= "--------------------\n";
 	$info_content .= "Plugins\n";
