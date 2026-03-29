@@ -77,6 +77,11 @@ function wpzm_handle_export_action() {
 	$themes_export_dir = $files_export_dir . '/themes';
 	$active_theme_export_dir = $themes_export_dir . '/' . $active_theme_stylesheet;
 
+	// Prepare the active plugins export paths.
+	$plugins_export_dir = $files_export_dir . '/plugins';
+	$active_plugin_paths = get_option('active_plugins', array());
+	$active_plugin_export_results = array();
+
     // Ensure base export directory exists.
 	if (!file_exists($export_dir)) {
 		wp_mkdir_p($export_dir);
@@ -106,6 +111,19 @@ function wpzm_handle_export_action() {
 			'action'  => 'export',
 			'type'    => 'error',
 			'message' => 'Failed to create files export directory.',
+		);
+	}
+
+	// Create the plugins export directory.
+	if (!file_exists($plugins_export_dir)) {
+		wp_mkdir_p($plugins_export_dir);
+	}
+
+	if (!file_exists($plugins_export_dir)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to create plugins export directory.',
 		);
 	}
 
@@ -153,6 +171,38 @@ function wpzm_handle_export_action() {
 		);
 	}
 
+	// Copy each active plugin directory into the export package.
+	foreach ($active_plugin_paths as $plugin_path) {
+
+		$plugin_folder = dirname($plugin_path);
+
+		// Skip strange root-level plugin file cases for now.
+		if ($plugin_folder === '.' || empty($plugin_folder)) {
+			continue;
+		}
+
+		$plugin_source_dir = WP_PLUGIN_DIR . '/' . $plugin_folder;
+		$plugin_export_dir = $plugins_export_dir . '/' . $plugin_folder;
+
+		$plugin_copied = wpzm_copy_directory($plugin_source_dir, $plugin_export_dir);
+
+		if ($plugin_copied === false) {
+			return array(
+				'action'  => 'export',
+				'type'    => 'error',
+				'message' => 'Failed to copy active plugin directory: ' . $plugin_folder,
+			);
+		}
+
+		$active_plugin_export_results[] = array(
+			'plugin_path' => $plugin_path,
+			'folder'      => $plugin_folder,
+			'source_dir'  => $plugin_source_dir,
+			'export_dir'  => $plugin_export_dir,
+			'copied'      => true,
+		);
+	}
+
 	// Build the path for a simple export info file.
 	$info_file = $export_path . '/export-info.txt';
 
@@ -189,7 +239,11 @@ function wpzm_handle_export_action() {
 			'export_dir' => $uploads_export_dir,
 			'copied'  => $theme_copied,
 		),
-		'plugins' => $active_plugins,
+		'plugins' => array(
+			'active_plugin_paths'   => $active_plugin_paths,
+			'plugins_export_dir'    => $plugins_export_dir,
+			'exported_plugins'      => $active_plugin_export_results,
+		),
 	);
 
 	// Convert the array to JSON.
@@ -235,12 +289,15 @@ function wpzm_handle_export_action() {
 	$info_content .= "--------------------\n";
 	$info_content .= "Plugins\n";
 	$info_content .= "--------------------\n";
-	$info_content .= "Active Plugins: " . count($active_plugins) . "\n";
+	$info_content .= "Active Plugins: " . count($active_plugin_paths) . "\n";
+	$info_content .= "Plugins Export Directory: " . $plugins_export_dir . "\n";
 	$info_content .= "Plugin List:\n";
 
-	foreach ($active_plugins as $plugin) {
-		$info_content .= " - " . $plugin . "\n";
-	}	
+	foreach ($active_plugin_export_results as $plugin_result) {
+		$info_content .= "- " . $plugin_result['plugin_path'] . "\n";
+		$info_content .= "  Source: " . $plugin_result['source_dir'] . "\n";
+		$info_content .= "  Export: " . $plugin_result['export_dir'] . "\n";
+	}		
 
 	// Start SQL export content.
 	$database_content = "-- WP Zero Migrate database export\n";
