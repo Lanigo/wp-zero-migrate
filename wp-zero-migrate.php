@@ -670,10 +670,46 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	// Create a timestamped import working directory.
+	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
+	$timestamp = date('Y-m-d-H-i-s');
+	$import_path = $import_base_dir . '/import-' . $timestamp;
+
+	if (!file_exists($import_base_dir)) {
+		wp_mkdir_p($import_base_dir);
+	}
+
+	if (!file_exists($import_path)) {
+		wp_mkdir_p($import_path);
+	}
+
+	if (!file_exists($import_path)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to create import working directory.',
+		);
+	}
+
+	$uploaded_zip_path = $import_path . '/import-package.zip';
+
+	$upload_moved = move_uploaded_file(
+		$_FILES['wpzm_import_zip']['tmp_name'],
+		$uploaded_zip_path
+	);
+
+	if ($upload_moved === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to store uploaded zip file.',
+		);
+	}
+
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
-		'message' => 'Import package detected successfully.',
+		'message' => 'Import package uploaded successfully: ' . $uploaded_zip_path,
 	);
 }
 
@@ -704,7 +740,7 @@ function wpzm_render_admin_page() {
 			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
 				<p><?php echo esc_html($import_result['message']); ?></p>
 			</div>
-		<?php endif; ?>
+		<?php endif; ?>ss
 
         <form method="post">
 	        <?php wp_nonce_field('wpzm_run_export_action', 'wpzm_nonce'); ?>
