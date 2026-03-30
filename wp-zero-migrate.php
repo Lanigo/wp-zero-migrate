@@ -669,7 +669,24 @@ function wpzm_render_admin_page() {
 		        </button>
 	        </p>
         </form>
-	</div>
+		<hr>
+
+		<hr>
+
+		<h2>Import Package</h2>
+		<p>Upload an export-package.zip file to begin the import process.</p>
+
+		<form method="post" enctype="multipart/form-data">
+			<?php wp_nonce_field('wpzm_import_package_action', 'wpzm_import_nonce'); ?>
+			<p>
+				<input type="file" name="wpzm_import_zip" accept=".zip">
+			</p>
+			<p>
+				<button type="submit" name="wpzm_run_import" class="button">
+					Import Package
+				</button>
+			</p>
+		</form>
 
 		<?php if (!empty($latest_zip_url)) : ?>
 				<p>
