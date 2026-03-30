@@ -638,9 +638,48 @@ function wpzm_create_zip_archive($zip_file, $export_path, $files_to_include) {
 	return file_exists($zip_file);
 }
 
+// Handle the import form submission and return a result array.
+function wpzm_handle_import_action() {
+
+	// If the import button was not clicked, return no result.
+	if (!isset($_POST['wpzm_run_import'])) {
+		return null;
+	}
+
+	// Verify the nonce before processing the import submission.
+	if (
+		!isset($_POST['wpzm_import_nonce']) ||
+		!wp_verify_nonce($_POST['wpzm_import_nonce'], 'wpzm_import_package_action')
+	) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import security check failed.',
+		);
+	}
+
+	// Check whether a file was uploaded.
+	if (
+		!isset($_FILES['wpzm_import_zip']) ||
+		empty($_FILES['wpzm_import_zip']['name'])
+	) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Please choose a zip file to import.',
+		);
+	}
+
+	return array(
+		'action'  => 'import',
+		'type'    => 'success',
+		'message' => 'Import package detected successfully.',
+	);
+}
+
 function wpzm_render_admin_page() {
-	// Ask my helper function whether there is any export result to show.
-	$result = wpzm_handle_export_action();
+	$export_result = wpzm_handle_export_action();
+	$import_result = wpzm_handle_import_action();
 
 	$latest_zip_file = get_option('wpzm_latest_zip_export_file', '');
 
@@ -655,11 +694,17 @@ function wpzm_render_admin_page() {
 		<h1>WP Zero Migrate</h1>
 		<p>Your migration plugin is alive.</p>
 
-		<?php if (!empty($result)) : ?>
-	        <div class="notice notice-<?php echo esc_attr($result['type']); ?>">
-		        <p><?php echo esc_html($result['message']); ?></p>
-	        </div>
-        <?php endif; ?>
+		<?php if (!empty($export_result)) : ?>
+			<div class="notice notice-<?php echo esc_attr($export_result['type']); ?>">
+				<p><?php echo esc_html($export_result['message']); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<?php if (!empty($import_result)) : ?>
+			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
+				<p><?php echo esc_html($import_result['message']); ?></p>
+			</div>
+		<?php endif; ?>
 
         <form method="post">
 	        <?php wp_nonce_field('wpzm_run_export_action', 'wpzm_nonce'); ?>
