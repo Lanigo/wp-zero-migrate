@@ -825,11 +825,24 @@ function wpzm_handle_import_action() {
 	}
 
 	$site_name = isset($manifest_data['site_name']) ? $manifest_data['site_name'] : 'Unknown Site';
+	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
+	$active_plugin_count = isset($manifest_data['plugins']['active_plugin_paths']) ? count($manifest_data['plugins']['active_plugin_paths']) : 0;
+	$uploads_copied = isset($manifest_data['uploads_copied']) ? $manifest_data['uploads_copied'] : false;
+	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
+	$uploads_export_size = isset($manifest_data['uploads_export_size']) ? $manifest_data['uploads_export_size'] : 0;
+
+	$summary_message = 'Import package validated successfully. ';
+	$summary_message .= 'Site: ' . $site_name . '. ';
+	$summary_message .= 'Theme: ' . $theme_name . '. ';
+	$summary_message .= 'Active Plugins: ' . $active_plugin_count . '. ';
+	$summary_message .= 'Uploads Copied: ' . ($uploads_copied ? 'Yes' : 'No') . '. ';
+	$summary_message .= 'Uploads File Count: ' . $uploads_file_count . '. ';
+	$summary_message .= 'Uploads Size (bytes): ' . $uploads_export_size . '.';
 
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
-		'message' => 'Import package validated successfully. Site: ' . $site_name,
+		'message' => $summary_message,
 	);
 }
 
