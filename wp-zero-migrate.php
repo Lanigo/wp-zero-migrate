@@ -834,6 +834,7 @@ function wpzm_handle_import_action() {
 	$destination_upload_dir = wp_upload_dir();
 	$destination_uploads_dir = $destination_upload_dir['basedir'];
 	$destination_themes_dir = get_theme_root();
+	$destination_plugins_dir = WP_PLUGIN_DIR;
 
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
@@ -863,8 +864,19 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
+
+	if ($plugins_imported === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to import plugins into destination plugins directory.',
+		);
+	}
+
 	$summary_message .= ' Uploads Imported: ' . ($uploads_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Themes Imported: ' . ($themes_imported ? 'Yes' : 'No') . '.';
+	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
 
 	return array(
 		'action'  => 'import',
