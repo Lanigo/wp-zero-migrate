@@ -706,10 +706,53 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$extracted_path = $import_path . '/extracted';
+
+	if (!file_exists($extracted_path)) {
+		wp_mkdir_p($extracted_path);
+	}
+
+	if (!file_exists($extracted_path)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to create extraction directory.',
+		);
+	}
+	
+	if (!class_exists('ZipArchive')) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'ZipArchive is not available on this server.',
+		);
+	}
+
+	$zip = new ZipArchive();
+
+	if ($zip->open($uploaded_zip_path) !== true) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to open uploaded zip package.',
+		);
+	}
+
+	$zip_extracted = $zip->extractTo($extracted_path);
+	$zip->close();h
+
+	if ($zip_extracted === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to extract import package.',
+		);
+	}
+
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
-		'message' => 'Import package uploaded successfully: ' . $uploaded_zip_path,
+		'message' => 'Import package uploaded and extracted successfully: ' . $extracted_path,
 	);
 }
 
