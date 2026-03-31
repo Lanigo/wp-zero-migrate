@@ -831,6 +831,9 @@ function wpzm_handle_import_action() {
 	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
 	$uploads_export_size = isset($manifest_data['uploads_export_size']) ? $manifest_data['uploads_export_size'] : 0;
 
+	$destination_upload_dir = wp_upload_dir();
+	$destination_uploads_dir = $destination_upload_dir['basedir'];
+
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
@@ -838,6 +841,18 @@ function wpzm_handle_import_action() {
 	$summary_message .= 'Uploads Copied: ' . ($uploads_copied ? 'Yes' : 'No') . '. ';
 	$summary_message .= 'Uploads File Count: ' . $uploads_file_count . '. ';
 	$summary_message .= 'Uploads Size (bytes): ' . $uploads_export_size . '.';
+
+	$uploads_imported = wpzm_copy_directory($uploads_dir, $destination_uploads_dir);
+
+	$summary_message .= ' Uploads Imported: ' . ($uploads_imported ? 'Yes' : 'No') . '.';
+
+	if ($uploads_imported === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to import uploads into destination uploads directory.',
+		);
+	}
 
 	return array(
 		'action'  => 'import',
