@@ -749,10 +749,65 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$manifest_file = $extracted_path . '/manifest.json';
+	$database_file = $extracted_path . '/database.sql';
+	$files_dir = $extracted_path . '/files';
+	$uploads_dir = $files_dir . '/uploads';
+	$themes_dir = $files_dir . '/themes';
+	$plugins_dir = $files_dir . '/plugins';
+
+	if (!file_exists($manifest_file)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing manifest.json.',
+		);
+	}
+
+	if (!file_exists($database_file)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing database.sql.',
+		);
+	}
+
+	if (!is_dir($files_dir)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing the files directory.',
+		);
+	}
+
+	if (!is_dir($uploads_dir)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing the uploads directory.',
+		);
+	}
+
+	if (!is_dir($themes_dir)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing the themes directory.',
+		);
+	}
+
+	if (!is_dir($plugins_dir)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Import package is missing the plugins directory.',
+		);
+	}
+
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
-		'message' => 'Import package uploaded and extracted successfully: ' . $extracted_path,
+		'message' => 'Import package uploaded, extracted, and validated successfully: ' . $extracted_path,
 	);
 }
 
