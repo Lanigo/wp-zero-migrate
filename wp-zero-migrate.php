@@ -479,7 +479,7 @@ function wpzm_copy_directory($source, $destination) {
 
 	foreach ($items as $item) {
 
-		if ($item === '.' || $item === '..') {
+		if ($item === '.' || $item === '..' || $item === '.git') {
 			continue;
 		}
 
