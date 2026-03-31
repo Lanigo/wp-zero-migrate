@@ -739,7 +739,7 @@ function wpzm_handle_import_action() {
 	}
 
 	$zip_extracted = $zip->extractTo($extracted_path);
-	$zip->close();h
+	$zip->close();
 
 	if ($zip_extracted === false) {
 		return array(
@@ -804,10 +804,32 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$manifest_content = file_get_contents($manifest_file);
+
+	if ($manifest_content === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to read manifest.json.',
+		);
+	}
+
+	$manifest_data = json_decode($manifest_content, true);
+
+	if ($manifest_data === null) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Invalid JSON in manifest.json.',
+		);
+	}
+
+	$site_name = isset($manifest_data['site_name']) ? $manifest_data['site_name'] : 'Unknown Site';
+
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
-		'message' => 'Import package uploaded, extracted, and validated successfully: ' . $extracted_path,
+		'message' => 'Import package validated successfully. Site: ' . $site_name,
 	);
 }
 
@@ -838,7 +860,7 @@ function wpzm_render_admin_page() {
 			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
 				<p><?php echo esc_html($import_result['message']); ?></p>
 			</div>
-		<?php endif; ?>ss
+		<?php endif; ?>
 
         <form method="post">
 	        <?php wp_nonce_field('wpzm_run_export_action', 'wpzm_nonce'); ?>
