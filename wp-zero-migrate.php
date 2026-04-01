@@ -893,9 +893,7 @@ function wpzm_handle_import_action() {
 
 	global $wpdb;
 
-	$first_sql_statement = isset($sql_statements[0]) ? $sql_statements[0] : '';
-
-	if (empty($first_sql_statement)) {
+	if (empty($sql_statements)) {
 		return array(
 			'action'  => 'import',
 			'type'    => 'error',
@@ -903,17 +901,24 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	$first_statement_result = $wpdb->query($first_sql_statement);
+	$executed_sql_count = 0;
 
-	if ($first_statement_result === false) {
-		return array(
-			'action'  => 'import',
-			'type'    => 'error',
-			'message' => 'Failed to execute the first SQL statement.',
-		);
+	foreach ($sql_statements as $index => $sql_statement) {
+
+		$sql_result = $wpdb->query($sql_statement);
+
+		if ($sql_result === false) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'SQL import failed at statement #' . ($index + 1),
+			);
+		}
+
+		$executed_sql_count++;
 	}
 
-	$summary_message .= ' First SQL Statement Executed: Yes.';
+	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
 	return array(
 		'action'  => 'import',
