@@ -884,6 +884,8 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$sql_statement_count = count($sql_statements);
+
 	$summary_message .= ' Uploads Imported: ' . ($uploads_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Themes Imported: ' . ($themes_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
