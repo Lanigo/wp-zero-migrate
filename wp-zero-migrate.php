@@ -874,15 +874,73 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$sql_statements = wpzm_parse_sql_statements($database_file);
+
+	if ($sql_statements === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to parse database.sql into executable statements.',
+		);
+	}
+
 	$summary_message .= ' Uploads Imported: ' . ($uploads_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Themes Imported: ' . ($themes_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
+	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
 
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
 		'message' => $summary_message,
 	);
+}
+
+// Parse a SQL file into executable statements.
+function wpzm_parse_sql_statements($sql_file_path) {
+
+	if (!file_exists($sql_file_path)) {
+		return false;
+	}
+
+	$lines = file($sql_file_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+	if ($lines === false) {
+		return false;
+	}
+
+	$statements = array();
+	$current_statement = '';
+
+	foreach ($lines as $line) {
+
+		$trimmed_line = trim($line);
+
+		// Skip SQL comments.
+		if (strpos($trimmed_line, '--') === 0) {
+			continue;
+		}
+
+		// Skip empty lines.
+		if ($trimmed_line === '') {
+			continue;
+		}
+
+		$current_statement .= $line . "\n";
+
+		// If the line ends with a semicolon, the statement is complete.
+		if (substr(rtrim($trimmed_line), -1) === ';') {
+			$statements[] = trim($current_statement);
+			$current_statement = '';
+		}
+	}
+
+	// If anything is left over, treat that as a parsing failure.
+	if (trim($current_statement) !== '') {
+		return false;
+	}
+
+	return $statements;
 }
 
 function wpzm_render_admin_page() {
