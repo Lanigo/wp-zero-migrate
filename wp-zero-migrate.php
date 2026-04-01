@@ -891,6 +891,30 @@ function wpzm_handle_import_action() {
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
 
+	global $wpdb;
+
+	$first_sql_statement = isset($sql_statements[0]) ? $sql_statements[0] : '';
+
+	if (empty($first_sql_statement)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'No SQL statements were available to execute.',
+		);
+	}
+
+	$first_statement_result = $wpdb->query($first_sql_statement);
+
+	if ($first_statement_result === false) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Failed to execute the first SQL statement.',
+		);
+	}
+
+	$summary_message .= ' First SQL Statement Executed: Yes.';
+
 	return array(
 		'action'  => 'import',
 		'type'    => 'success',
