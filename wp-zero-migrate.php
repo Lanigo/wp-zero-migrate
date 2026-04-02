@@ -830,6 +830,7 @@ function wpzm_handle_import_action() {
 	$source_site_url = isset($manifest_data['site_url']) ? $manifest_data['site_url'] : '';
 	$destination_site_url = $original_destination_site_url;
 	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
+	$theme_stylesheet = isset($manifest_data['theme']['stylesheet']) ? $manifest_data['theme']['stylesheet'] : '';
 	$active_plugin_count = isset($manifest_data['plugins']['active_plugin_paths']) ? count($manifest_data['plugins']['active_plugin_paths']) : 0;
 	$uploads_copied = isset($manifest_data['uploads_copied']) ? $manifest_data['uploads_copied'] : false;
 	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
@@ -866,6 +867,18 @@ function wpzm_handle_import_action() {
 			'type'    => 'error',
 			'message' => 'Failed to import themes into destination themes directory.',
 		);
+	}
+
+	if (!empty($theme_stylesheet)) {
+		$expected_theme_dir = $destination_themes_dir . '/' . $theme_stylesheet;
+
+		if (!is_dir($expected_theme_dir)) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Theme files were copied, but the expected active theme folder was not found: ' . $theme_stylesheet,
+			);
+		}
 	}
 
 	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
