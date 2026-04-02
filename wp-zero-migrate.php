@@ -924,16 +924,41 @@ function wpzm_handle_import_action() {
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
-	if (!empty($source_site_url) && !empty($destination_site_url)) {
+		if (!empty($source_site_url) && !empty($destination_site_url)) {
 		update_option('siteurl', $destination_site_url);
 		update_option('home', $destination_site_url);
 
+		$options_replaced = wpzm_replace_url_in_options($source_site_url, $destination_site_url);
+		$posts_replaced = wpzm_replace_url_in_posts($source_site_url, $destination_site_url);
+		$postmeta_replaced = wpzm_replace_url_in_meta_table($wpdb->postmeta, 'meta_id', 'meta_value', $source_site_url, $destination_site_url);
+		$usermeta_replaced = wpzm_replace_url_in_meta_table($wpdb->usermeta, 'umeta_id', 'meta_value', $source_site_url, $destination_site_url);
+		$commentmeta_replaced = wpzm_replace_url_in_meta_table($wpdb->commentmeta, 'meta_id', 'meta_value', $source_site_url, $destination_site_url);
+
+		if (
+			$options_replaced === false ||
+			$posts_replaced === false ||
+			$postmeta_replaced === false ||
+			$usermeta_replaced === false ||
+			$commentmeta_replaced === false
+		) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Database import succeeded, but URL replacement failed.',
+			);
+		}
+
 		$summary_message .= ' Site URL Updated: Yes.';
+		$summary_message .= ' URL Replacements - Options: ' . $options_replaced . '.';
+		$summary_message .= ' Posts: ' . $posts_replaced . '.';
+		$summary_message .= ' Postmeta: ' . $postmeta_replaced . '.';
+		$summary_message .= ' Usermeta: ' . $usermeta_replaced . '.';
+		$summary_message .= ' Commentmeta: ' . $commentmeta_replaced . '.';
 	} else {
 		$summary_message .= ' Site URL Updated: No.';
 	}
 
-wp_cache_flush();
+	wp_cache_flush();
 
 	return array(
 		'action'  => 'import',
@@ -987,6 +1012,163 @@ function wpzm_parse_sql_statements($sql_file_path) {
 	}
 
 	return $statements;
+}
+
+// Recursively replace URLs in plain, array, object, or serialized values.
+function wpzm_replace_url_in_value($value, $old_url, $new_url) {
+
+	if (is_array($value)) {
+		foreach ($value as $key => $item) {
+			$value[$key] = wpzm_replace_url_in_value($item, $old_url, $new_url);
+		}
+		return $value;
+	}
+
+	if (is_object($value)) {
+		foreach (get_object_vars($value) as $property => $item) {
+			$value->$property = wpzm_replace_url_in_value($item, $old_url, $new_url);
+		}
+		return $value;
+	}
+
+	if (is_string($value)) {
+		if (is_serialized($value)) {
+			$unserialized = maybe_unserialize($value);
+			$replaced = wpzm_replace_url_in_value($unserialized, $old_url, $new_url);
+			return maybe_serialize($replaced);
+		}
+
+		return str_replace($old_url, $new_url, $value);
+	}
+
+	return $value;
+}
+
+// Replace URLs inside a meta table value column.
+function wpzm_replace_url_in_meta_table($table_name, $id_column, $value_column, $old_url, $new_url) {
+
+	global $wpdb;
+
+	$rows = $wpdb->get_results(
+		"SELECT `$id_column`, `$value_column` FROM `$table_name`",
+		ARRAY_A
+	);
+
+	if (!is_array($rows)) {
+		return false;
+	}
+
+	$updated_count = 0;
+
+	foreach ($rows as $row) {
+		$original_value = $row[$value_column];
+		$replaced_value = wpzm_replace_url_in_value($original_value, $old_url, $new_url);
+
+		if ($replaced_value !== $original_value) {
+			$result = $wpdb->update(
+				$table_name,
+				array($value_column => $replaced_value),
+				array($id_column => $row[$id_column]),
+				array('%s'),
+				array('%d')
+			);
+
+			if ($result === false) {
+				return false;
+			}
+
+			$updated_count++;
+		}
+	}
+
+	return $updated_count;
+}
+
+// Replace URLs inside wp_options values.
+function wpzm_replace_url_in_options($old_url, $new_url) {
+
+	global $wpdb;
+
+	$options_table = $wpdb->options;
+
+	$rows = $wpdb->get_results(
+		"SELECT option_id, option_value FROM `$options_table`",
+		ARRAY_A
+	);
+
+	if (!is_array($rows)) {
+		return false;
+	}
+
+	$updated_count = 0;
+
+	foreach ($rows as $row) {
+		$original_value = $row['option_value'];
+		$replaced_value = wpzm_replace_url_in_value($original_value, $old_url, $new_url);
+
+		if ($replaced_value !== $original_value) {
+			$result = $wpdb->update(
+				$options_table,
+				array('option_value' => $replaced_value),
+				array('option_id' => $row['option_id']),
+				array('%s'),
+				array('%d')
+			);
+
+			if ($result === false) {
+				return false;
+			}
+
+			$updated_count++;
+		}
+	}
+
+	return $updated_count;
+}
+
+// Replace URLs inside post content and excerpt.
+function wpzm_replace_url_in_posts($old_url, $new_url) {
+
+	global $wpdb;
+
+	$posts_table = $wpdb->posts;
+
+	$rows = $wpdb->get_results(
+		"SELECT ID, post_content, post_excerpt FROM `$posts_table`",
+		ARRAY_A
+	);
+
+	if (!is_array($rows)) {
+		return false;
+	}
+
+	$updated_count = 0;
+
+	foreach ($rows as $row) {
+		$new_content = wpzm_replace_url_in_value($row['post_content'], $old_url, $new_url);
+		$new_excerpt = wpzm_replace_url_in_value($row['post_excerpt'], $old_url, $new_url);
+
+		if ($new_content !== $row['post_content'] || $new_excerpt !== $row['post_excerpt']) {
+			$result = $wpdb->update(
+				$posts_table,
+				array(
+					'post_content' => $new_content,
+					'post_excerpt' => $new_excerpt,
+				),
+				array('ID' => $row['ID']),
+				array('%s', '%s'),
+				array('%d')
+			);
+
+			if ($result === false) {
+				return false;
+			}
+
+			$updated_count++;
+		}
+	}
+
+	return $updated_count;
 }
 
 function wpzm_render_admin_page() {
