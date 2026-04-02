@@ -911,6 +911,16 @@ function wpzm_handle_import_action() {
 		}
 	}
 
+	$expected_plugin_file = $destination_plugins_dir . '/' . $plugin_path;
+
+	if (!file_exists($expected_plugin_file)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Plugin folder exists, but expected active plugin file was not found: ' . $plugin_path,
+		);
+	}
+
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
 	if ($sql_statements === false) {
