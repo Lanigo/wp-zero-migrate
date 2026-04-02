@@ -891,6 +891,26 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	if (!empty($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths'])) {
+		foreach ($manifest_data['plugins']['active_plugin_paths'] as $plugin_path) {
+			$plugin_folder = dirname($plugin_path);
+
+			if ($plugin_folder === '.' || empty($plugin_folder)) {
+				continue;
+			}
+
+			$expected_plugin_dir = $destination_plugins_dir . '/' . $plugin_folder;
+
+			if (!is_dir($expected_plugin_dir)) {
+				return array(
+					'action'  => 'import',
+					'type'    => 'error',
+					'message' => 'Plugin files were copied, but expected active plugin folder was not found: ' . $plugin_folder,
+				);
+			}
+		}
+	}
+
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
 	if ($sql_statements === false) {
