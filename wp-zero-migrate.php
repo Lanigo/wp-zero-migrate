@@ -670,6 +670,8 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$original_destination_site_url = home_url();
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -825,6 +827,8 @@ function wpzm_handle_import_action() {
 	}
 
 	$site_name = isset($manifest_data['site_name']) ? $manifest_data['site_name'] : 'Unknown Site';
+	$source_site_url = isset($manifest_data['site_url']) ? $manifest_data['site_url'] : '';
+	$destination_site_url = $original_destination_site_url;
 	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
 	$active_plugin_count = isset($manifest_data['plugins']['active_plugin_paths']) ? count($manifest_data['plugins']['active_plugin_paths']) : 0;
 	$uploads_copied = isset($manifest_data['uploads_copied']) ? $manifest_data['uploads_copied'] : false;
@@ -919,6 +923,17 @@ function wpzm_handle_import_action() {
 	}
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
+
+	if (!empty($source_site_url) && !empty($destination_site_url)) {
+		update_option('siteurl', $destination_site_url);
+		update_option('home', $destination_site_url);
+
+		$summary_message .= ' Site URL Updated: Yes.';
+	} else {
+		$summary_message .= ' Site URL Updated: No.';
+	}
+
+wp_cache_flush();
 
 	return array(
 		'action'  => 'import',
