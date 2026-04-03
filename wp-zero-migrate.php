@@ -271,6 +271,7 @@ function wpzm_handle_export_action() {
 		'theme' => array(
 			'name'       => wp_get_theme()->get('Name'),
 			'stylesheet' => wp_get_theme()->get_stylesheet(),
+			'template'   => wp_get_theme()->get_template(),
 			'source_dir'       => $active_theme_source_dir,
 			'export_dir'       => $active_theme_export_dir,
 			'copied'           => $theme_copied,
