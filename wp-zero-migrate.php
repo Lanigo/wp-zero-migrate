@@ -908,6 +908,18 @@ function wpzm_handle_import_action() {
 		}
 	}
 
+	if (!empty($theme_stylesheet)) {
+		switch_theme($theme_stylesheet);
+
+		if (get_option('stylesheet') !== $theme_stylesheet) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Theme options were restored, but WordPress failed to switch to the imported theme.',
+			);
+		}
+	}
+
 	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
 
 	if ($plugins_imported === false) {
