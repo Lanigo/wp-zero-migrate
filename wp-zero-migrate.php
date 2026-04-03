@@ -930,8 +930,20 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	if (!function_exists('activate_plugin')) {
+	if (!function_exists('activate_plugin') || !function_exists('is_plugin_active') || !function_exists('deactivate_plugins')) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	$current_active_plugins = get_option('active_plugins', array());
+
+	if (!is_array($current_active_plugins)) {
+		$current_active_plugins = array();
+	}
+
+	foreach ($current_active_plugins as $current_plugin_path) {
+		if (!in_array($current_plugin_path, $active_plugin_paths, true) && is_plugin_active($current_plugin_path)) {
+			deactivate_plugins($current_plugin_path, true);
+		}
 	}
 
 	if (!empty($active_plugin_paths)) {
