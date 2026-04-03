@@ -895,6 +895,18 @@ function wpzm_handle_import_action() {
 		}
 	}
 
+	if (!empty($theme_template)) {
+		$template_updated = update_option('template', $theme_template);
+
+		if ($template_updated === false && get_option('template') !== $theme_template) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Theme files were imported, but failed to restore the active theme template option.',
+			);
+		}
+	}
+
 	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
 
 	if ($plugins_imported === false) {
