@@ -833,6 +833,7 @@ function wpzm_handle_import_action() {
 	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
 	$theme_stylesheet = isset($manifest_data['theme']['stylesheet']) ? $manifest_data['theme']['stylesheet'] : '';
 	$theme_template = isset($manifest_data['theme']['template']) ? $manifest_data['theme']['template'] : '';
+	$active_plugin_paths = isset($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths']) ? $manifest_data['plugins']['active_plugin_paths'] : array();
 	$active_plugin_count = isset($manifest_data['plugins']['active_plugin_paths']) ? count($manifest_data['plugins']['active_plugin_paths']) : 0;
 	$uploads_copied = isset($manifest_data['uploads_copied']) ? $manifest_data['uploads_copied'] : false;
 	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
@@ -917,8 +918,8 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	if (!empty($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths'])) {
-		foreach ($manifest_data['plugins']['active_plugin_paths'] as $plugin_path) {
+	if (!empty($active_plugin_paths)) {
+		foreach ($active_plugin_paths as $plugin_path) {
 			$plugin_folder = dirname($plugin_path);
 
 			if ($plugin_folder === '.' || empty($plugin_folder)) {
@@ -944,6 +945,16 @@ function wpzm_handle_import_action() {
 			'action'  => 'import',
 			'type'    => 'error',
 			'message' => 'Plugin folder exists, but expected active plugin file was not found: ' . $plugin_path,
+		);
+	}
+
+	$active_plugins_updated = update_option('active_plugins', $active_plugin_paths);
+
+	if ($active_plugins_updated === false && get_option('active_plugins') !== $active_plugin_paths) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Plugin files were imported, but failed to restore the active plugins option.',
 		);
 	}
 
