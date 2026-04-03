@@ -978,16 +978,6 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	$active_plugins_updated = update_option('active_plugins', $active_plugin_paths);
-
-	if ($active_plugins_updated === false && get_option('active_plugins') !== $active_plugin_paths) {
-		return array(
-			'action'  => 'import',
-			'type'    => 'error',
-			'message' => 'Plugin files were imported, but failed to restore the active plugins option.',
-		);
-	}
-
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
 	if ($sql_statements === false) {
