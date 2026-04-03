@@ -930,6 +930,24 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	if (!function_exists('activate_plugin')) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	if (!empty($active_plugin_paths)) {
+		foreach ($active_plugin_paths as $plugin_path) {
+			$activation_result = activate_plugin($plugin_path);
+
+			if (is_wp_error($activation_result)) {
+				return array(
+					'action'  => 'import',
+					'type'    => 'error',
+					'message' => 'Plugin file exists, but activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message(),
+				);
+			}
+		}
+	}
+
 	if (!empty($active_plugin_paths)) {
 		foreach ($active_plugin_paths as $plugin_path) {
 			$plugin_folder = dirname($plugin_path);
