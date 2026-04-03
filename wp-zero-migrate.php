@@ -956,6 +956,14 @@ function wpzm_handle_import_action() {
 
 	if (!empty($active_plugin_paths)) {
 		foreach ($active_plugin_paths as $plugin_path) {
+			if (in_array($plugin_path, $protected_plugins, true) && is_plugin_active($plugin_path)) {
+				continue;
+			}
+
+			if (is_plugin_active($plugin_path)) {
+				continue;
+			}
+
 			$activation_result = activate_plugin($plugin_path);
 
 			if (is_wp_error($activation_result)) {
