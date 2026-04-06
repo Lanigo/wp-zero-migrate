@@ -831,6 +831,8 @@ function wpzm_handle_import_action() {
 	$source_site_url = isset($manifest_data['site_url']) ? $manifest_data['site_url'] : '';
 	$destination_site_url = $original_destination_site_url;
 	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
+	$source_database_prefix = isset($manifest_data['database_prefix']) ? $manifest_data['database_prefix'] : '';
+	$destination_database_prefix = $GLOBALS['wpdb']->prefix;
 	$theme_stylesheet = isset($manifest_data['theme']['stylesheet']) ? $manifest_data['theme']['stylesheet'] : '';
 	$theme_template = isset($manifest_data['theme']['template']) ? $manifest_data['theme']['template'] : '';
 	$active_plugin_paths = isset($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths']) ? $manifest_data['plugins']['active_plugin_paths'] : array();
@@ -944,6 +946,8 @@ function wpzm_handle_import_action() {
 		$current_active_plugins = array();
 	}
 
+	$plugin_activation_warnings = array();
+
 	foreach ($current_active_plugins as $current_plugin_path) {
 		if (in_array($current_plugin_path, $protected_plugins, true)) {
 			continue;
@@ -967,11 +971,8 @@ function wpzm_handle_import_action() {
 			$activation_result = activate_plugin($plugin_path);
 
 			if (is_wp_error($activation_result)) {
-				return array(
-					'action'  => 'import',
-					'type'    => 'error',
-					'message' => 'Plugin file exists, but activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message(),
-				);
+				$plugin_activation_warnings[] = 'Activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message();
+				continue;
 			}
 		}
 	}
@@ -1023,6 +1024,16 @@ function wpzm_handle_import_action() {
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
 
+		if (!empty($plugin_activation_warnings)) {
+		$summary_message .= ' Plugin Activation Warnings: ' . count($plugin_activation_warnings) . '.';
+
+			foreach ($plugin_activation_warnings as $warning_message) {
+				$summary_message .= ' Warning: ' . $warning_message . '.';
+			}
+		} else {
+			$summary_message .= ' Plugin Activation Warnings: 0.';
+		}
+
 	global $wpdb;
 
 	if (empty($sql_statements)) {
@@ -1036,6 +1047,14 @@ function wpzm_handle_import_action() {
 	$executed_sql_count = 0;
 
 	foreach ($sql_statements as $index => $sql_statement) {
+
+		if (!empty($source_database_prefix) && !empty($destination_database_prefix)) {
+			$sql_statement = str_replace(
+				'`' . $source_database_prefix,
+				'`' . $destination_database_prefix,
+				$sql_statement
+			);
+		}
 
 		$sql_result = $wpdb->query($sql_statement);
 
