@@ -932,81 +932,6 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	if (!function_exists('activate_plugin') || !function_exists('is_plugin_active') || !function_exists('deactivate_plugins')) {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-	}
-
-	$protected_plugins = array(
-		'wp-zero-migrate/wp-zero-migrate.php',
-	);
-
-	$current_active_plugins = get_option('active_plugins', array());
-
-	if (!is_array($current_active_plugins)) {
-		$current_active_plugins = array();
-	}
-
-	$plugin_activation_warnings = array();
-
-	foreach ($current_active_plugins as $current_plugin_path) {
-		if (in_array($current_plugin_path, $protected_plugins, true)) {
-			continue;
-		}
-
-		if (!in_array($current_plugin_path, $active_plugin_paths, true) && is_plugin_active($current_plugin_path)) {
-			deactivate_plugins($current_plugin_path, true);
-		}
-	}
-
-	if (!empty($active_plugin_paths)) {
-		foreach ($active_plugin_paths as $plugin_path) {
-			if (in_array($plugin_path, $protected_plugins, true) && is_plugin_active($plugin_path)) {
-				continue;
-			}
-
-			if (is_plugin_active($plugin_path)) {
-				continue;
-			}
-
-			$activation_result = activate_plugin($plugin_path);
-
-			if (is_wp_error($activation_result)) {
-				$plugin_activation_warnings[] = 'Activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message();
-				continue;
-			}
-		}
-	}
-
-	if (!empty($active_plugin_paths)) {
-		foreach ($active_plugin_paths as $plugin_path) {
-			$plugin_folder = dirname($plugin_path);
-
-			if ($plugin_folder === '.' || empty($plugin_folder)) {
-				continue;
-			}
-
-			$expected_plugin_dir = $destination_plugins_dir . '/' . $plugin_folder;
-
-			if (!is_dir($expected_plugin_dir)) {
-				return array(
-					'action'  => 'import',
-					'type'    => 'error',
-					'message' => 'Plugin files were copied, but expected active plugin folder was not found: ' . $plugin_folder,
-				);
-			}
-		}
-	}
-
-	$expected_plugin_file = $destination_plugins_dir . '/' . $plugin_path;
-
-	if (!file_exists($expected_plugin_file)) {
-		return array(
-			'action'  => 'import',
-			'type'    => 'error',
-			'message' => 'Plugin folder exists, but expected active plugin file was not found: ' . $plugin_path,
-		);
-	}
-
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
 	if ($sql_statements === false) {
@@ -1024,15 +949,15 @@ function wpzm_handle_import_action() {
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
 
-		if (!empty($plugin_activation_warnings)) {
-		$summary_message .= ' Plugin Activation Warnings: ' . count($plugin_activation_warnings) . '.';
+	if (!empty($plugin_activation_warnings)) {
+	$summary_message .= ' Plugin Activation Warnings: ' . count($plugin_activation_warnings) . '.';
 
-			foreach ($plugin_activation_warnings as $warning_message) {
-				$summary_message .= ' Warning: ' . $warning_message . '.';
-			}
-		} else {
-			$summary_message .= ' Plugin Activation Warnings: 0.';
+		foreach ($plugin_activation_warnings as $warning_message) {
+			$summary_message .= ' Warning: ' . $warning_message . '.';
 		}
+	} else {
+		$summary_message .= ' Plugin Activation Warnings: 0.';
+	}
 
 	global $wpdb;
 
@@ -1103,6 +1028,85 @@ function wpzm_handle_import_action() {
 		$summary_message .= ' Commentmeta: ' . $commentmeta_replaced . '.';
 	} else {
 		$summary_message .= ' Site URL Updated: No.';
+	}
+
+	if (!function_exists('activate_plugin') || !function_exists('is_plugin_active') || !function_exists('deactivate_plugins')) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	$protected_plugins = array(
+		'wp-zero-migrate/wp-zero-migrate.php',
+	);
+
+	$current_active_plugins = get_option('active_plugins', array());
+
+	if (!is_array($current_active_plugins)) {
+		$current_active_plugins = array();
+	}
+
+	$plugin_activation_warnings = array();
+
+	foreach ($current_active_plugins as $current_plugin_path) {
+		if (in_array($current_plugin_path, $protected_plugins, true)) {
+			continue;
+		}
+
+		if (!in_array($current_plugin_path, $active_plugin_paths, true) && is_plugin_active($current_plugin_path)) {
+			deactivate_plugins($current_plugin_path, true);
+		}
+	}
+
+	if (!empty($active_plugin_paths)) {
+		foreach ($active_plugin_paths as $plugin_path) {
+			if (in_array($plugin_path, $protected_plugins, true) && is_plugin_active($plugin_path)) {
+				continue;
+			}
+
+			if (is_plugin_active($plugin_path)) {
+				continue;
+			}
+
+			$activation_result = activate_plugin($plugin_path);
+
+			if (is_wp_error($activation_result)) {
+				$plugin_activation_warnings[] = 'Activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message();
+				continue;
+			}
+		}
+	}
+
+	if (!empty($active_plugin_paths)) {
+		foreach ($active_plugin_paths as $plugin_path) {
+			$plugin_folder = dirname($plugin_path);
+
+			if ($plugin_folder === '.' || empty($plugin_folder)) {
+				continue;
+			}
+
+			$expected_plugin_dir = $destination_plugins_dir . '/' . $plugin_folder;
+
+			if (!is_dir($expected_plugin_dir)) {
+				return array(
+					'action'  => 'import',
+					'type'    => 'error',
+					'message' => 'Plugin files were copied, but expected active plugin folder was not found: ' . $plugin_folder,
+				);
+			}
+		}
+	}
+
+	if (!empty($active_plugin_paths)) {
+		foreach ($active_plugin_paths as $plugin_path) {
+			$expected_plugin_file = $destination_plugins_dir . '/' . $plugin_path;
+
+			if (!file_exists($expected_plugin_file)) {
+				return array(
+					'action'  => 'import',
+					'type'    => 'error',
+					'message' => 'Plugin folder exists, but expected active plugin file was not found: ' . $plugin_path,
+				);
+			}
+		}
 	}
 
 	wp_cache_flush();
