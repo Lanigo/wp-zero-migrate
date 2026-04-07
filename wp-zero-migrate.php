@@ -673,6 +673,7 @@ function wpzm_handle_import_action() {
 
 	$original_destination_site_url = home_url();
 	$import_warnings = array();
+	$import_steps = array();
 
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
@@ -847,6 +848,8 @@ function wpzm_handle_import_action() {
 	$destination_themes_dir = get_theme_root();
 	$destination_plugins_dir = WP_PLUGIN_DIR;
 
+	$import_steps[] = 'Import package validated';
+
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
@@ -865,6 +868,8 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+	$import_steps[] = 'Uploads imported';
+
 	$themes_imported = wpzm_copy_directory($themes_dir, $destination_themes_dir);
 
 	if ($themes_imported === false) {
@@ -874,6 +879,8 @@ function wpzm_handle_import_action() {
 			'message' => 'Failed to import themes into destination themes directory.',
 		);
 	}
+
+	$import_steps[] = 'Themes imported';
 
 	if (!empty($theme_stylesheet)) {
 		$expected_theme_dir = $destination_themes_dir . '/' . $theme_stylesheet;
@@ -923,6 +930,10 @@ function wpzm_handle_import_action() {
 		}
 	}
 
+	if (!empty($theme_stylesheet)) {
+		$import_steps[] = 'Theme restored';
+	}
+
 	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
 
 	if ($plugins_imported === false) {
@@ -932,6 +943,8 @@ function wpzm_handle_import_action() {
 			'message' => 'Failed to import plugins into destination plugins directory.',
 		);
 	}
+
+	$import_steps[] = 'Plugin files imported';
 
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
@@ -949,6 +962,8 @@ function wpzm_handle_import_action() {
 	$summary_message .= ' Themes Imported: ' . ($themes_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
 	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
+
+	$import_steps[] = 'Database imported';
 
 	if (!empty($plugin_activation_warnings)) {
 		foreach ($plugin_activation_warnings as $warning_message) {
@@ -1016,6 +1031,8 @@ function wpzm_handle_import_action() {
 				'message' => 'Database import succeeded, but URL replacement failed.',
 			);
 		}
+
+		$import_steps[] = 'URL replacement completed';
 
 		$summary_message .= ' Site URL Updated: Yes.';
 		$summary_message .= ' URL Replacements - Options: ' . $options_replaced . '.';
@@ -1106,6 +1123,8 @@ function wpzm_handle_import_action() {
 		}
 	}
 
+	$import_steps[] = 'Plugin restoration completed';
+
 	if (!empty($import_warnings)) {
 		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
 
@@ -1115,8 +1134,27 @@ function wpzm_handle_import_action() {
 	} else {
 		$summary_message .= ' Site URL Updated: No.';
 		$import_warnings[] = 'Source site URL or destination site URL was missing, so URL replacement did not run.';
+		$import_steps[] = 'URL replacement skipped';
 	}
 
+	if (!empty($import_warnings)) {
+		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
+
+		foreach ($import_warnings as $warning_message) {
+			$summary_message .= ' Warning: ' . $warning_message . '.';
+		}
+	} else {
+		$summary_message .= ' Import Warnings: 0.';
+	}
+
+	if (!empty($import_steps)) {
+		$summary_message .= ' Import Steps Completed: ' . count($import_steps) . '.';
+
+		foreach ($import_steps as $step_message) {
+			$summary_message .= ' Step: ' . $step_message . '.';
+		}
+	}
+	
 	wp_cache_flush();
 
 	return array(
