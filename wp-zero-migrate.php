@@ -680,6 +680,9 @@ function wpzm_handle_import_action() {
 	// show a more trustworthy step-by-step summary.
 	$import_steps = array();
 
+	// Provide post-import guidance so the developer knows what to verify next.
+	$next_actions = array();
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -1267,16 +1270,24 @@ function wpzm_handle_import_action() {
 			$summary_message .= ' Step: ' . $step_message . '.';
 		}
 	}
+
+	// Add a basic post-import checklist to help the developer verify the migrated site.
+	$next_actions[] = 'Visit the site frontend and confirm the imported theme, menus, and styling are loading correctly.';
+	$next_actions[] = 'Open Settings > Permalinks and resave permalinks if pages or posts are not loading correctly.';
+	$next_actions[] = 'If Elementor was used on the source site, run Elementor URL replacement and regenerate CSS if needed.';
+	$next_actions[] = 'Review plugins for dependency-related activation issues, especially WooCommerce add-ons that require WooCommerce to be active first.';
+	$next_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
 	
 	wp_cache_flush();
 
 	// Return the main summary plus structured warnings and steps for clearer admin UI output.
 	return array(
-		'action'   => 'import',
-		'type'     => 'success',
-		'message'  => $summary_message,
-		'warnings' => $import_warnings,
-		'steps'    => $import_steps,
+		'action'       => 'import',
+		'type'         => 'success',
+		'message'      => $summary_message,
+		'warnings'     => $import_warnings,
+		'steps'        => $import_steps,
+		'next_actions' => $next_actions,
 	);
 }
 
@@ -1526,6 +1537,16 @@ function wpzm_render_admin_page() {
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($import_result['steps'] as $step_message) : ?>
 							<li><?php echo esc_html($step_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
+				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
+					<p><strong>Next Actions</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($import_result['next_actions'] as $next_action) : ?>
+							<li><?php echo esc_html($next_action); ?></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
