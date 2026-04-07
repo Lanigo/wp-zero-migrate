@@ -997,10 +997,12 @@ function wpzm_handle_import_action() {
 		$sql_result = $wpdb->query($sql_statement);
 
 		if ($sql_result === false) {
+			$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
+
 			return array(
 				'action'  => 'import',
 				'type'    => 'error',
-				'message' => 'SQL import failed at statement #' . ($index + 1),
+				'message' => 'SQL import failed at statement #' . ($index + 1) . '. MySQL error: ' . $wpdb->last_error . '. SQL preview: ' . $sql_preview,
 			);
 		}
 
