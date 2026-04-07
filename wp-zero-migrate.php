@@ -928,10 +928,11 @@ function wpzm_handle_import_action() {
 				'message' => 'Theme options were restored, but WordPress failed to switch to the imported theme.',
 			);
 		}
-	}
 
-	if (!empty($theme_stylesheet)) {
 		$import_steps[] = 'Theme restored';
+	} else {
+		$import_warnings[] = 'Theme stylesheet was missing from the manifest, so theme restoration was skipped.';
+		$import_steps[] = 'Theme restoration skipped';
 	}
 
 	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
@@ -1123,7 +1124,12 @@ function wpzm_handle_import_action() {
 		}
 	}
 
-	$import_steps[] = 'Plugin restoration completed';
+	if (!empty($active_plugin_paths)) {
+		$import_steps[] = 'Plugin restoration completed';
+	} else {
+		$import_warnings[] = 'No active plugin paths were found in the manifest, so plugin restoration was skipped.';
+		$import_steps[] = 'Plugin restoration skipped';
+	}
 
 	if (!empty($import_warnings)) {
 		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
