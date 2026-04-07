@@ -1270,10 +1270,13 @@ function wpzm_handle_import_action() {
 	
 	wp_cache_flush();
 
+	// Return the main summary plus structured warnings and steps for clearer admin UI output.
 	return array(
-		'action'  => 'import',
-		'type'    => 'success',
-		'message' => $summary_message,
+		'action'   => 'import',
+		'type'     => 'success',
+		'message'  => $summary_message,
+		'warnings' => $import_warnings,
+		'steps'    => $import_steps,
 	);
 }
 
@@ -1503,10 +1506,29 @@ function wpzm_render_admin_page() {
 				<p><?php echo esc_html($export_result['message']); ?></p>
 			</div>
 		<?php endif; ?>
-
+		
+		<?php // Show the import summary first, then render structured warnings and completed steps when available. ?>
 		<?php if (!empty($import_result)) : ?>
 			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
 				<p><?php echo esc_html($import_result['message']); ?></p>
+
+				<?php if (!empty($import_result['warnings']) && is_array($import_result['warnings'])) : ?>
+					<p><strong>Warnings</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($import_result['warnings'] as $warning_message) : ?>
+							<li><?php echo esc_html($warning_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($import_result['steps']) && is_array($import_result['steps'])) : ?>
+					<p><strong>Completed Steps</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($import_result['steps'] as $step_message) : ?>
+							<li><?php echo esc_html($step_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
 			</div>
 		<?php endif; ?>
 
