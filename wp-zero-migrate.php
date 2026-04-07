@@ -835,6 +835,17 @@ function wpzm_handle_import_action() {
 	$theme_name = isset($manifest_data['theme']['name']) ? $manifest_data['theme']['name'] : 'Unknown Theme';
 	$source_database_prefix = isset($manifest_data['database_prefix']) ? $manifest_data['database_prefix'] : '';
 	$destination_database_prefix = $GLOBALS['wpdb']->prefix;
+
+	$prefix_remap_needed = (
+		!empty($source_database_prefix) &&
+		!empty($destination_database_prefix) &&
+		$source_database_prefix !== $destination_database_prefix
+	);
+
+	if (empty($source_database_prefix)) {
+		$import_warnings[] = 'Source database prefix was missing from the manifest.';
+	}
+
 	$theme_stylesheet = isset($manifest_data['theme']['stylesheet']) ? $manifest_data['theme']['stylesheet'] : '';
 	$theme_template = isset($manifest_data['theme']['template']) ? $manifest_data['theme']['template'] : '';
 	$active_plugin_paths = isset($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths']) ? $manifest_data['plugins']['active_plugin_paths'] : array();
@@ -850,6 +861,12 @@ function wpzm_handle_import_action() {
 
 	$import_steps[] = 'Import package validated';
 
+	if ($prefix_remap_needed) {
+		$import_steps[] = 'Database prefix remap detected';
+	} else {
+		$import_steps[] = 'Database prefix remap not needed';
+	}
+
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
@@ -857,6 +874,9 @@ function wpzm_handle_import_action() {
 	$summary_message .= 'Uploads Copied: ' . ($uploads_copied ? 'Yes' : 'No') . '. ';
 	$summary_message .= 'Uploads File Count: ' . $uploads_file_count . '. ';
 	$summary_message .= 'Uploads Size (bytes): ' . $uploads_export_size . '.';
+	$summary_message .= ' Source DB Prefix: ' . (!empty($source_database_prefix) ? $source_database_prefix : '[missing]') . '.';
+	$summary_message .= ' Destination DB Prefix: ' . (!empty($destination_database_prefix) ? $destination_database_prefix : '[missing]') . '.';
+	$summary_message .= ' Prefix Remap Needed: ' . ($prefix_remap_needed ? 'Yes' : 'No') . '.';
 
 	$uploads_imported = wpzm_copy_directory($uploads_dir, $destination_uploads_dir);
 
