@@ -836,6 +836,8 @@ function wpzm_handle_import_action() {
 	$source_database_prefix = isset($manifest_data['database_prefix']) ? $manifest_data['database_prefix'] : '';
 	$destination_database_prefix = $GLOBALS['wpdb']->prefix;
 
+	// Detect whether imported SQL table names need to be remapped from the source
+	// database prefix to the current destination site's database prefix.
 	$prefix_remap_needed = (
 		!empty($source_database_prefix) &&
 		!empty($destination_database_prefix) &&
@@ -854,6 +856,41 @@ function wpzm_handle_import_action() {
 	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
 	$uploads_export_size = isset($manifest_data['uploads_export_size']) ? $manifest_data['uploads_export_size'] : 0;
 
+	// Warn when key manifest values are missing or look incomplete.
+	// These are not hard failures yet, but they reduce confidence in the package.
+	if (!isset($manifest_data['uploads_file_count'])) {
+		$import_warnings[] = 'Uploads file count was missing from the manifest.';
+	}
+
+	if (!isset($manifest_data['uploads_export_size'])) {
+		$import_warnings[] = 'Uploads export size was missing from the manifest.';
+	}
+
+	if (!isset($manifest_data['uploads_copied'])) {
+		$import_warnings[] = 'Uploads copied status was missing from the manifest.';
+	}
+
+	if (!isset($manifest_data['plugins']['active_plugin_paths'])) {
+		$import_warnings[] = 'Active plugin paths were missing from the manifest.';
+	}
+
+	if (!isset($manifest_data['theme']['stylesheet'])) {
+		$import_warnings[] = 'Theme stylesheet was missing from the manifest.';
+	}
+
+	// Warn when manifest values exist but suggest the export may be incomplete.
+	if ($uploads_copied === false) {
+		$import_warnings[] = 'Manifest reports that uploads were not copied successfully during export.';
+	}
+
+	if ($uploads_file_count === 0) {
+		$import_warnings[] = 'Manifest reports zero uploaded files.';
+	}
+
+	if ($uploads_export_size === 0) {
+		$import_warnings[] = 'Manifest reports zero upload bytes.';
+	}
+
 	$destination_upload_dir = wp_upload_dir();
 	$destination_uploads_dir = $destination_upload_dir['basedir'];
 	$destination_themes_dir = get_theme_root();
@@ -866,6 +903,9 @@ function wpzm_handle_import_action() {
 	} else {
 		$import_steps[] = 'Database prefix remap not needed';
 	}
+
+	// Record that manifest quality checks were completed before import work begins.
+	$import_steps[] = 'Manifest metadata reviewed';
 
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
