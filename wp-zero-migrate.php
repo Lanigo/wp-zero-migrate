@@ -672,7 +672,12 @@ function wpzm_handle_import_action() {
 	}
 
 	$original_destination_site_url = home_url();
+
+	// Collect non-fatal issues that should be shown in the final import report.
 	$import_warnings = array();
+
+	// Record the major import stages that completed, so the final result can
+	// show a more trustworthy step-by-step summary.
 	$import_steps = array();
 
 	// Create a timestamped import working directory.
@@ -907,6 +912,7 @@ function wpzm_handle_import_action() {
 	// Record that manifest quality checks were completed before import work begins.
 	$import_steps[] = 'Manifest metadata reviewed';
 
+	// Build a human-readable import summary that will be shown in the admin UI.
 	$summary_message = 'Import package validated successfully. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
@@ -1044,6 +1050,7 @@ function wpzm_handle_import_action() {
 
 	$executed_sql_count = 0;
 
+	// Execute each parsed SQL statement in order, remapping table prefixes when needed.
 	foreach ($sql_statements as $index => $sql_statement) {
 
 		if (!empty($source_database_prefix) && !empty($destination_database_prefix)) {
@@ -1057,6 +1064,7 @@ function wpzm_handle_import_action() {
 		$sql_result = $wpdb->query($sql_statement);
 
 		if ($sql_result === false) {
+			// Keep the SQL preview short so the error message is useful without becoming unreadable.
 			$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
 
 			return array(
@@ -1071,6 +1079,8 @@ function wpzm_handle_import_action() {
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
+	// After the database import, update the destination site URL and replace
+	// old source URLs across key WordPress tables and meta values.
 		if (!empty($source_site_url) && !empty($destination_site_url)) {
 		update_option('siteurl', $destination_site_url);
 		update_option('home', $destination_site_url);
@@ -1107,6 +1117,8 @@ function wpzm_handle_import_action() {
 		$summary_message .= ' Site URL Updated: No.';
 	}
 
+	// Restore the active plugin state after the database and URL work is complete.
+	// This keeps plugin dependency issues from interrupting the more critical import stages.
 	if (!function_exists('activate_plugin') || !function_exists('is_plugin_active') || !function_exists('deactivate_plugins')) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	}
@@ -1193,6 +1205,7 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'Plugin restoration skipped';
 	}
 
+	// Append collected warnings and completed steps to the final admin-facing import summary.
 	if (!empty($import_warnings)) {
 		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
 
