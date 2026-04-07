@@ -896,6 +896,8 @@ function wpzm_handle_import_action() {
 		$import_warnings[] = 'Manifest reports zero upload bytes.';
 	}
 
+	$actual_destination_uploads_file_count = null;
+
 	$destination_upload_dir = wp_upload_dir();
 	$destination_uploads_dir = $destination_upload_dir['basedir'];
 	$destination_themes_dir = get_theme_root();
@@ -935,6 +937,36 @@ function wpzm_handle_import_action() {
 	}
 
 	$import_steps[] = 'Uploads imported';
+
+	// Count the files now present in the destination uploads directory so the
+	// import report can compare the real result against the manifest metadata.
+	$actual_destination_uploads_file_count = wpzm_count_files_in_directory($destination_uploads_dir);
+
+	if ($actual_destination_uploads_file_count === false) {
+		$import_warnings[] = 'Failed to count files in the destination uploads directory after import.';
+	} else {
+		$import_steps[] = 'Destination uploads counted';
+	}
+
+	if (
+		$actual_destination_uploads_file_count !== false &&
+		$uploads_file_count > 0 &&
+		$actual_destination_uploads_file_count < $uploads_file_count
+	) {
+		$import_warnings[] = 'Destination uploads file count is lower than the manifest count. Manifest: ' . $uploads_file_count . '. Destination: ' . $actual_destination_uploads_file_count . '.';
+	}
+
+	if (
+		$actual_destination_uploads_file_count !== false &&
+		$uploads_file_count > 0 &&
+		$actual_destination_uploads_file_count !== $uploads_file_count
+	) {
+		$import_steps[] = 'Uploads count compared against manifest';
+	}
+
+	if ($actual_destination_uploads_file_count !== false && $actual_destination_uploads_file_count !== null) {
+		$summary_message .= ' Destination Uploads File Count: ' . $actual_destination_uploads_file_count . '.';
+	}
 
 	$themes_imported = wpzm_copy_directory($themes_dir, $destination_themes_dir);
 
