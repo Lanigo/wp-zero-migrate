@@ -1349,9 +1349,16 @@ function wpzm_replace_url_in_value($value, $old_url, $new_url) {
 	}
 
 	if (is_object($value)) {
+		// Skip incomplete objects because PHP cannot safely modify their properties
+		// unless the original class has been loaded before unserialization.
+		if (get_class($value) === '__PHP_Incomplete_Class') {
+			return $value;
+		}
+
 		foreach (get_object_vars($value) as $property => $item) {
 			$value->$property = wpzm_replace_url_in_value($item, $old_url, $new_url);
 		}
+
 		return $value;
 	}
 
