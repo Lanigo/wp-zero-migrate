@@ -672,6 +672,7 @@ function wpzm_handle_import_action() {
 	}
 
 	$original_destination_site_url = home_url();
+	$import_warnings = array();
 
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
@@ -950,13 +951,9 @@ function wpzm_handle_import_action() {
 	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
 
 	if (!empty($plugin_activation_warnings)) {
-	$summary_message .= ' Plugin Activation Warnings: ' . count($plugin_activation_warnings) . '.';
-
 		foreach ($plugin_activation_warnings as $warning_message) {
-			$summary_message .= ' Warning: ' . $warning_message . '.';
+			$import_warnings[] = $warning_message;
 		}
-	} else {
-		$summary_message .= ' Plugin Activation Warnings: 0.';
 	}
 
 	global $wpdb;
@@ -1107,6 +1104,17 @@ function wpzm_handle_import_action() {
 				);
 			}
 		}
+	}
+
+	if (!empty($import_warnings)) {
+		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
+
+		foreach ($import_warnings as $warning_message) {
+			$summary_message .= ' Warning: ' . $warning_message . '.';
+		}
+	} else {
+		$summary_message .= ' Site URL Updated: No.';
+		$import_warnings[] = 'Source site URL or destination site URL was missing, so URL replacement did not run.';
 	}
 
 	wp_cache_flush();
