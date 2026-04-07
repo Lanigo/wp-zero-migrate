@@ -683,6 +683,9 @@ function wpzm_handle_import_action() {
 	// Provide post-import guidance so the developer knows what to verify next.
 	$next_actions = array();
 
+	// Track whether URL replacement completed, was skipped, or failed.
+	$url_replacement_status = 'not_started';
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -1140,6 +1143,7 @@ function wpzm_handle_import_action() {
 			);
 		}
 
+		$url_replacement_status = 'completed';
 		$import_steps[] = 'URL replacement completed';
 
 		$summary_message .= ' Site URL Updated: Yes.';
@@ -1248,6 +1252,7 @@ function wpzm_handle_import_action() {
 			$summary_message .= ' Warning: ' . $warning_message . '.';
 		}
 	} else {
+		$url_replacement_status = 'skipped';
 		$summary_message .= ' Site URL Updated: No.';
 		$import_warnings[] = 'Source site URL or destination site URL was missing, so URL replacement did not run.';
 		$import_steps[] = 'URL replacement skipped';
@@ -1277,6 +1282,10 @@ function wpzm_handle_import_action() {
 	$next_actions[] = 'If Elementor was used on the source site, run Elementor URL replacement and regenerate CSS if needed.';
 	$next_actions[] = 'Review plugins for dependency-related activation issues, especially WooCommerce add-ons that require WooCommerce to be active first.';
 	$next_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
+
+	if ($url_replacement_status === 'not_started') {
+		$import_warnings[] = 'URL replacement status was never finalized during import.';
+	}
 	
 	wp_cache_flush();
 
