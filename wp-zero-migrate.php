@@ -1609,8 +1609,10 @@ function wpzm_render_admin_page() {
 
 		<hr>
 
+		<?php // Remind the user that stale export packages can overwrite the destination plugin with older bundled files. ?>
 		<h2>Import Package</h2>
 		<p>Upload an export-package.zip file to begin the import process.</p>
+		<p><strong>Important:</strong> If you changed WP Zero Migrate or other source-site files, create a fresh export package before testing import. The import package includes plugin files and may overwrite the destination plugin with the version bundled in the zip.</p>
 
 		<form method="post" enctype="multipart/form-data">
 			<?php wp_nonce_field('wpzm_import_package_action', 'wpzm_import_nonce'); ?>
