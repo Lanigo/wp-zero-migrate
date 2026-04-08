@@ -1264,6 +1264,18 @@ function wpzm_handle_import_action() {
 	
 	wp_cache_flush();
 
+	// Save the latest successful import report so it can still be viewed after
+	// the page reloads or the user has to log in again.
+	$last_import_report = array(
+		'timestamp'    => current_time('mysql'),
+		'message'      => $summary_message,
+		'warnings'     => $import_warnings,
+		'steps'        => $import_steps,
+		'next_actions' => $next_actions,
+	);
+
+	update_option('wpzm_last_import_report', $last_import_report);
+
 	// Return the main summary plus structured warnings and steps for clearer admin UI output.
 	return array(
 		'action'       => 'import',
@@ -1489,6 +1501,7 @@ function wpzm_replace_url_in_posts($old_url, $new_url) {
 function wpzm_render_admin_page() {
 	$export_result = wpzm_handle_export_action();
 	$import_result = wpzm_handle_import_action();
+	$last_import_report = get_option('wpzm_last_import_report', array());
 
 	$latest_zip_file = get_option('wpzm_latest_zip_export_file', '');
 
@@ -1537,6 +1550,46 @@ function wpzm_render_admin_page() {
 					<p><strong>Next Actions</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($import_result['next_actions'] as $next_action) : ?>
+							<li><?php echo esc_html($next_action); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+		
+		<?php // Show the last saved successful import report when there is no fresh import result in this request. ?>
+		<?php if (empty($import_result) && !empty($last_import_report) && is_array($last_import_report)) : ?>
+			<div class="notice notice-info">
+				<p><strong>Last Import Report</strong></p>
+
+				<?php if (!empty($last_import_report['timestamp'])) : ?>
+					<p><em><?php echo esc_html($last_import_report['timestamp']); ?></em></p>
+				<?php endif; ?>
+
+				<p><?php echo esc_html($last_import_report['message']); ?></p>
+
+				<?php if (!empty($last_import_report['warnings']) && is_array($last_import_report['warnings'])) : ?>
+					<p><strong>Warnings</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($last_import_report['warnings'] as $warning_message) : ?>
+							<li><?php echo esc_html($warning_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['steps']) && is_array($last_import_report['steps'])) : ?>
+					<p><strong>Completed Steps</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($last_import_report['steps'] as $step_message) : ?>
+							<li><?php echo esc_html($step_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
+					<p><strong>Next Actions</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($last_import_report['next_actions'] as $next_action) : ?>
 							<li><?php echo esc_html($next_action); ?></li>
 						<?php endforeach; ?>
 					</ul>
