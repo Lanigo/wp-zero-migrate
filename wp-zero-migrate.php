@@ -1532,9 +1532,37 @@ function wpzm_replace_url_in_posts($old_url, $new_url) {
 	return $updated_count;
 }
 
+// Handle clearing the saved last import report from the admin page.
+function wpzm_handle_clear_last_import_report_action() {
+
+	if (!isset($_POST['wpzm_clear_last_import_report'])) {
+		return null;
+	}
+
+	if (
+		!isset($_POST['wpzm_clear_last_import_report_nonce']) ||
+		!wp_verify_nonce($_POST['wpzm_clear_last_import_report_nonce'], 'wpzm_clear_last_import_report_action')
+	) {
+		return array(
+			'action'  => 'clear_last_import_report',
+			'type'    => 'error',
+			'message' => 'Security check failed while clearing the last import report.',
+		);
+	}
+
+	delete_option('wpzm_last_import_report');
+
+	return array(
+		'action'  => 'clear_last_import_report',
+		'type'    => 'success',
+		'message' => 'Last import report cleared.',
+	);
+}
+
 function wpzm_render_admin_page() {
 	$export_result = wpzm_handle_export_action();
 	$import_result = wpzm_handle_import_action();
+	$clear_last_import_report_result = wpzm_handle_clear_last_import_report_action();
 	$last_import_report = get_option('wpzm_last_import_report', array());
 
 	$latest_zip_file = get_option('wpzm_latest_zip_export_file', '');
@@ -1590,6 +1618,12 @@ function wpzm_render_admin_page() {
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>
+
+		<?php if (!empty($clear_last_import_report_result)) : ?>
+			<div class="notice notice-<?php echo esc_attr($clear_last_import_report_result['type']); ?>">
+				<p><?php echo esc_html($clear_last_import_report_result['message']); ?></p>
+			</div>
+		<?php endif; ?>
 		
 		<?php // Show the last saved successful import report when there is no fresh import result in this request. ?>
 		<?php if (empty($import_result) && !empty($last_import_report) && is_array($last_import_report)) : ?>
@@ -1620,6 +1654,7 @@ function wpzm_render_admin_page() {
 					</ul>
 				<?php endif; ?>
 
+				<?php // Let the user clear the saved report once it is no longer useful. ?>
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
 					<p><strong>Next Actions</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
@@ -1628,6 +1663,15 @@ function wpzm_render_admin_page() {
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
+
+				<form method="post" style="margin-top: 12px;">
+					<?php wp_nonce_field('wpzm_clear_last_import_report_action', 'wpzm_clear_last_import_report_nonce'); ?>
+					<p>
+						<button type="submit" name="wpzm_clear_last_import_report" class="button">
+							Clear Last Import Report
+						</button>
+					</p>
+				</form>
 			</div>
 		<?php endif; ?>
 
