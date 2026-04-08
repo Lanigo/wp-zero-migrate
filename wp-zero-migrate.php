@@ -1039,17 +1039,51 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'Theme restoration skipped';
 	}
 
-	$plugins_imported = wpzm_copy_directory($plugins_dir, $destination_plugins_dir);
+		// Copy packaged plugins into the destination plugins directory, but protect
+	// WP Zero Migrate itself from being overwritten by an older bundled copy.
+	$plugin_directories = scandir($plugins_dir);
 
-	if ($plugins_imported === false) {
+	if ($plugin_directories === false) {
 		return array(
 			'action'  => 'import',
 			'type'    => 'error',
-			'message' => 'Failed to import plugins into destination plugins directory.',
+			'message' => 'Failed to read the packaged plugins directory.',
 		);
 	}
 
+	$plugins_imported = true;
+
+	foreach ($plugin_directories as $plugin_directory_name) {
+		if ($plugin_directory_name === '.' || $plugin_directory_name === '..') {
+			continue;
+		}
+
+		if ($plugin_directory_name === 'wp-zero-migrate') {
+			$import_warnings[] = 'Skipped importing the packaged WP Zero Migrate plugin folder to avoid overwriting the destination plugin version.';
+			continue;
+		}
+
+		$source_plugin_directory = $plugins_dir . '/' . $plugin_directory_name;
+		$destination_plugin_directory = $destination_plugins_dir . '/' . $plugin_directory_name;
+
+		if (!is_dir($source_plugin_directory)) {
+			continue;
+		}
+
+		$single_plugin_imported = wpzm_copy_directory($source_plugin_directory, $destination_plugin_directory);
+
+		if ($single_plugin_imported === false) {
+			$plugins_imported = false;
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Failed to import plugin directory: ' . $plugin_directory_name,
+			);
+		}
+	}
+
 	$import_steps[] = 'Plugin files imported';
+	$import_steps[] = 'Protected WP Zero Migrate from plugin overwrite';
 
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
