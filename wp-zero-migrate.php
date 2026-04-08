@@ -1248,23 +1248,8 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'Plugin restoration skipped';
 	}
 
-	if (!empty($import_warnings)) {
-		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
-
-		foreach ($import_warnings as $warning_message) {
-			$summary_message .= ' Warning: ' . $warning_message . '.';
-		}
-	} else {
-		$summary_message .= ' Import Warnings: 0.';
-	}
-
-	if (!empty($import_steps)) {
-		$summary_message .= ' Import Steps Completed: ' . count($import_steps) . '.';
-
-		foreach ($import_steps as $step_message) {
-			$summary_message .= ' Step: ' . $step_message . '.';
-		}
-	}
+	// Keep the summary message focused on the high-level import outcome.
+	// Detailed warnings, completed steps, and next actions are rendered separately in the admin UI.
 
 	// Add a basic post-import checklist to help the developer verify the migrated site.
 	$next_actions[] = 'Visit the site frontend and confirm the imported theme, menus, and styling are loading correctly.';
