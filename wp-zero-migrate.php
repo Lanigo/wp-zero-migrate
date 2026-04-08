@@ -1153,7 +1153,11 @@ function wpzm_handle_import_action() {
 		$summary_message .= ' Usermeta: ' . $usermeta_replaced . '.';
 		$summary_message .= ' Commentmeta: ' . $commentmeta_replaced . '.';
 	} else {
+		// If either site URL is missing, skip replacement and report it clearly.
+		$url_replacement_status = 'skipped';
 		$summary_message .= ' Site URL Updated: No.';
+		$import_warnings[] = 'Source site URL or destination site URL was missing, so URL replacement did not run.';
+		$import_steps[] = 'URL replacement skipped';
 	}
 
 	// Restore the active plugin state after the database and URL work is complete.
@@ -1242,20 +1246,6 @@ function wpzm_handle_import_action() {
 	} else {
 		$import_warnings[] = 'No active plugin paths were found in the manifest, so plugin restoration was skipped.';
 		$import_steps[] = 'Plugin restoration skipped';
-	}
-
-	// Append collected warnings and completed steps to the final admin-facing import summary.
-	if (!empty($import_warnings)) {
-		$summary_message .= ' Import Warnings: ' . count($import_warnings) . '.';
-
-		foreach ($import_warnings as $warning_message) {
-			$summary_message .= ' Warning: ' . $warning_message . '.';
-		}
-	} else {
-		$url_replacement_status = 'skipped';
-		$summary_message .= ' Site URL Updated: No.';
-		$import_warnings[] = 'Source site URL or destination site URL was missing, so URL replacement did not run.';
-		$import_steps[] = 'URL replacement skipped';
 	}
 
 	if (!empty($import_warnings)) {
