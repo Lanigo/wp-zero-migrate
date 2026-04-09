@@ -1298,14 +1298,17 @@ function wpzm_handle_import_action() {
 	
 	wp_cache_flush();
 
-	// Save the latest successful import report so it can still be viewed after
-	// the page reloads or the user has to log in again.
+	// Save the latest successful import report with a little context so it is
+	// easier to understand later after reloads or repeated test runs.
 	$last_import_report = array(
-		'timestamp'    => current_time('mysql'),
-		'message'      => $summary_message,
-		'warnings'     => $import_warnings,
-		'steps'        => $import_steps,
-		'next_actions' => $next_actions,
+		'timestamp'       => current_time('mysql'),
+		'site_name'       => $site_name,
+		'source_site_url' => $source_site_url,
+		'theme_name'      => $theme_name,
+		'message'         => $summary_message,
+		'warnings'        => $import_warnings,
+		'steps'           => $import_steps,
+		'next_actions'    => $next_actions,
 	);
 
 	update_option('wpzm_last_import_report', $last_import_report);
@@ -1628,10 +1631,23 @@ function wpzm_render_admin_page() {
 		<?php // Show the last saved successful import report when there is no fresh import result in this request. ?>
 		<?php if (empty($import_result) && !empty($last_import_report) && is_array($last_import_report)) : ?>
 			<div class="notice notice-info">
+				
 				<p><strong>Last Import Report</strong></p>
-
+				<?php // Show a little saved context so the report is easier to identify later. ?>
 				<?php if (!empty($last_import_report['timestamp'])) : ?>
 					<p><em><?php echo esc_html($last_import_report['timestamp']); ?></em></p>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['site_name'])) : ?>
+					<p><strong>Site:</strong> <?php echo esc_html($last_import_report['site_name']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['source_site_url'])) : ?>
+					<p><strong>Source URL:</strong> <?php echo esc_html($last_import_report['source_site_url']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['theme_name'])) : ?>
+					<p><strong>Theme:</strong> <?php echo esc_html($last_import_report['theme_name']); ?></p>
 				<?php endif; ?>
 
 				<p><?php echo esc_html($last_import_report['message']); ?></p>
