@@ -694,6 +694,10 @@ function wpzm_handle_import_action() {
 	// say whether the destination count matched, was lower, or was higher.
 	$uploads_count_comparison_status = 'not_checked';
 
+	// Track the overall plugin restoration outcome so the final report can say
+	// whether plugins were restored cleanly, with issues, or skipped.
+	$plugin_restoration_status = 'not_started';j
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -870,6 +874,11 @@ function wpzm_handle_import_action() {
 	$theme_stylesheet = isset($manifest_data['theme']['stylesheet']) ? $manifest_data['theme']['stylesheet'] : '';
 	$theme_template = isset($manifest_data['theme']['template']) ? $manifest_data['theme']['template'] : '';
 	$active_plugin_paths = isset($manifest_data['plugins']['active_plugin_paths']) && is_array($manifest_data['plugins']['active_plugin_paths']) ? $manifest_data['plugins']['active_plugin_paths'] : array();
+
+	// Detect whether Elementor was active on the source site so post-import
+	// guidance can suggest Elementor-specific cleanup only when relevant.
+	$source_site_used_elementor = in_array('elementor/elementor.php', $active_plugin_paths, true);
+
 	$active_plugin_count = isset($manifest_data['plugins']['active_plugin_paths']) ? count($manifest_data['plugins']['active_plugin_paths']) : 0;
 	$uploads_copied = isset($manifest_data['uploads_copied']) ? $manifest_data['uploads_copied'] : false;
 	$uploads_file_count = isset($manifest_data['uploads_file_count']) ? $manifest_data['uploads_file_count'] : 0;
@@ -1302,29 +1311,65 @@ function wpzm_handle_import_action() {
 	}
 
 	if (!empty($active_plugin_paths)) {
-		$import_steps[] = 'Plugin restoration completed';
-
 		if (!empty($plugin_activation_issues)) {
-			$import_warnings[] = 'One or more plugins could not be activated automatically.';
+			$plugin_restoration_status = 'completed_with_issues';
+			$import_steps[] = 'Plugin restoration completed with activation issues';
+		} else {
+			$plugin_restoration_status = 'completed_cleanly';
+			$import_steps[] = 'Plugin restoration completed cleanly';
 		}
-
 	} else {
+		$plugin_restoration_status = 'skipped';
 		$import_warnings[] = 'No active plugin paths were found in the manifest, so plugin restoration was skipped.';
 		$import_steps[] = 'Plugin restoration skipped';
+	}
+
+	if (!empty($plugin_activation_issues)) {
+		$import_warnings[] = 'One or more plugins could not be activated automatically.';
 	}
 
 	// Keep the summary message focused on the high-level import outcome.
 	// Detailed warnings, completed steps, and next actions are rendered separately in the admin UI.
 
-	// Add a basic post-import checklist to help the developer verify the migrated site.
+		// Add a post-import checklist that responds to what actually happened during import.
 	$next_actions[] = 'Visit the site frontend and confirm the imported theme, menus, and styling are loading correctly.';
 	$next_actions[] = 'Open Settings > Permalinks and resave permalinks if pages or posts are not loading correctly.';
-	$next_actions[] = 'If Elementor was used on the source site, run Elementor URL replacement and regenerate CSS if needed.';
-	$next_actions[] = 'Review plugins for dependency-related activation issues, especially WooCommerce add-ons that require WooCommerce to be active first.';
-	$next_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
+
+	if ($source_site_used_elementor) {
+		$next_actions[] = 'Elementor was active on the source site. Run Elementor URL replacement and regenerate CSS if needed.';
+	}
+
+	// Only show plugin follow-up guidance when activation problems actually occurred.
+	if (!empty($plugin_activation_issues)) {
+		$next_actions[] = 'Review plugin activation issues and dependency order, especially WooCommerce add-ons that may require WooCommerce to be active first.';
+	}
+
+	if ($uploads_count_comparison_status === 'lower') {
+		$next_actions[] = 'Check the Media Library and uploads folder because the destination uploads count is lower than the manifest count.';
+	} elseif ($uploads_count_comparison_status === 'higher') {
+		$next_actions[] = 'Review the Media Library if needed because the destination uploads count is higher than the manifest count.';
+	} else {
+		$next_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
+	}
+
+	if ($url_replacement_status === 'skipped') {
+		$next_actions[] = 'Review site URLs manually because automatic URL replacement did not run.';
+	}
 
 	if ($url_replacement_status === 'not_started') {
 		$import_warnings[] = 'URL replacement status was never finalized during import.';
+	}
+
+	if ($plugin_restoration_status === 'completed_cleanly') {
+		$summary_message .= ' Plugin Restoration: Completed cleanly.';
+	} elseif ($plugin_restoration_status === 'completed_with_issues') {
+		$summary_message .= ' Plugin Restoration: Completed with activation issues.';
+	} elseif ($plugin_restoration_status === 'skipped') {
+		$summary_message .= ' Plugin Restoration: Skipped.';
+	}
+
+	if ($plugin_restoration_status === 'not_started') {
+		$import_warnings[] = 'Plugin restoration status was never finalized during import.';
 	}
 	
 	wp_cache_flush();
