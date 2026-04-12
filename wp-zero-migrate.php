@@ -1676,6 +1676,29 @@ function wpzm_render_admin_page() {
 			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
 				<p><?php echo esc_html($import_result['message']); ?></p>
 
+						<?php // Show key outcome statuses for the current import. ?>
+						<?php if (
+							!empty($import_result['url_replacement_status']) ||
+							!empty($import_result['uploads_count_comparison_status']) ||
+							!empty($import_result['plugin_restoration_status'])
+						) : ?>
+							<div style="padding: 10px 12px; margin: 12px 0; background: #fff; border-left: 4px solid #72aee6;">
+								<p><strong>Outcome Summary</strong></p>
+
+								<?php if (!empty($import_result['url_replacement_status'])) : ?>
+									<p><strong>URL Replacement:</strong> <?php echo esc_html($import_result['url_replacement_status']); ?></p>
+								<?php endif; ?>
+
+								<?php if (!empty($import_result['uploads_count_comparison_status'])) : ?>
+									<p><strong>Uploads Comparison:</strong> <?php echo esc_html($import_result['uploads_count_comparison_status']); ?></p>
+								<?php endif; ?>
+
+								<?php if (!empty($import_result['plugin_restoration_status'])) : ?>
+									<p><strong>Plugin Restoration:</strong> <?php echo esc_html($import_result['plugin_restoration_status']); ?></p>
+								<?php endif; ?>
+							</div>
+						<?php endif; ?>
+
 				<?php if (!empty($import_result['warnings']) && is_array($import_result['warnings'])) : ?>
 					<p><strong>Warnings</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
