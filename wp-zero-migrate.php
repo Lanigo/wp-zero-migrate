@@ -696,7 +696,7 @@ function wpzm_handle_import_action() {
 
 	// Track the overall plugin restoration outcome so the final report can say
 	// whether plugins were restored cleanly, with issues, or skipped.
-	$plugin_restoration_status = 'not_started';j
+	$plugin_restoration_status = 'not_started';
 
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
@@ -1381,6 +1381,9 @@ function wpzm_handle_import_action() {
 		'site_name'       			=> $site_name,
 		'source_site_url' 			=> $source_site_url,
 		'theme_name'      			=> $theme_name,
+		'url_replacement_status'         => $url_replacement_status,
+		'uploads_count_comparison_status' => $uploads_count_comparison_status,
+		'plugin_restoration_status'      => $plugin_restoration_status,
 		'message'         			=> $summary_message,
 		'warnings'        			=> $import_warnings,
 		'plugin_activation_issues'	=> $plugin_activation_issues,
@@ -1394,6 +1397,9 @@ function wpzm_handle_import_action() {
 	return array(
 		'action'       				=> 'import',
 		'type'         				=> 'success',
+		'url_replacement_status'          => $url_replacement_status,
+		'uploads_count_comparison_status' => $uploads_count_comparison_status,
+		'plugin_restoration_status'       => $plugin_restoration_status,
 		'message'      				=> $summary_message,
 		'warnings'     				=> $import_warnings,
 		'plugin_activation_issues' 	=> $plugin_activation_issues,
@@ -1736,6 +1742,19 @@ function wpzm_render_admin_page() {
 
 				<?php if (!empty($last_import_report['theme_name'])) : ?>
 					<p><strong>Theme:</strong> <?php echo esc_html($last_import_report['theme_name']); ?></p>
+				<?php endif; ?>
+
+				<?php // Show saved structured outcome statuses so the report is easier to interpret later. ?>
+				<?php if (!empty($last_import_report['url_replacement_status'])) : ?>
+					<p><strong>URL Replacement Status:</strong> <?php echo esc_html($last_import_report['url_replacement_status']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['uploads_count_comparison_status'])) : ?>
+					<p><strong>Uploads Comparison Status:</strong> <?php echo esc_html($last_import_report['uploads_count_comparison_status']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['plugin_restoration_status'])) : ?>
+					<p><strong>Plugin Restoration Status:</strong> <?php echo esc_html($last_import_report['plugin_restoration_status']); ?></p>
 				<?php endif; ?>
 
 				<p><?php echo esc_html($last_import_report['message']); ?></p>
