@@ -1646,6 +1646,28 @@ function wpzm_handle_clear_last_import_report_action() {
 	);
 }
 
+// Return a simple inline style for import outcome status labels.
+function wpzm_get_status_badge_style($status) {
+
+	switch ($status) {
+		case 'completed':
+		case 'matched':
+		case 'completed_cleanly':
+			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#d1e7dd; color:#0f5132; font-weight:600;';
+
+		case 'higher':
+		case 'skipped':
+		case 'completed_with_issues':
+			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#fff3cd; color:#664d03; font-weight:600;';
+
+		case 'lower':
+			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#f8d7da; color:#842029; font-weight:600;';
+
+		default:
+			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#e9ecef; color:#495057; font-weight:600;';
+	}
+}
+
 function wpzm_render_admin_page() {
 	$export_result = wpzm_handle_export_action();
 	$import_result = wpzm_handle_import_action();
@@ -1686,15 +1708,30 @@ function wpzm_render_admin_page() {
 								<p><strong>Outcome Summary</strong></p>
 
 								<?php if (!empty($import_result['url_replacement_status'])) : ?>
-									<p><strong>URL Replacement:</strong> <?php echo esc_html($import_result['url_replacement_status']); ?></p>
+									<p>
+										<strong>URL Replacement:</strong>
+										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['url_replacement_status'])); ?>">
+											<?php echo esc_html($import_result['url_replacement_status']); ?>
+										</span>
+									</p>
 								<?php endif; ?>
 
 								<?php if (!empty($import_result['uploads_count_comparison_status'])) : ?>
-									<p><strong>Uploads Comparison:</strong> <?php echo esc_html($import_result['uploads_count_comparison_status']); ?></p>
+									<p>
+										<strong>Uploads Comparison:</strong>
+										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['uploads_count_comparison_status'])); ?>">
+											<?php echo esc_html($import_result['uploads_count_comparison_status']); ?>
+										</span>
+									</p>
 								<?php endif; ?>
 
 								<?php if (!empty($import_result['plugin_restoration_status'])) : ?>
-									<p><strong>Plugin Restoration:</strong> <?php echo esc_html($import_result['plugin_restoration_status']); ?></p>
+									<p>
+										<strong>Plugin Restoration:</strong>
+										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['plugin_restoration_status'])); ?>">
+											<?php echo esc_html($import_result['plugin_restoration_status']); ?>
+										</span>
+									</p>
 								<?php endif; ?>
 							</div>
 						<?php endif; ?>
@@ -1769,15 +1806,30 @@ function wpzm_render_admin_page() {
 
 				<?php // Show saved structured outcome statuses so the report is easier to interpret later. ?>
 				<?php if (!empty($last_import_report['url_replacement_status'])) : ?>
-					<p><strong>URL Replacement Status:</strong> <?php echo esc_html($last_import_report['url_replacement_status']); ?></p>
+					<p>
+						<strong>URL Replacement:</strong>
+						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['url_replacement_status'])); ?>">
+							<?php echo esc_html($last_import_report['url_replacement_status']); ?>
+						</span>
+					</p>
 				<?php endif; ?>
 
 				<?php if (!empty($last_import_report['uploads_count_comparison_status'])) : ?>
-					<p><strong>Uploads Comparison Status:</strong> <?php echo esc_html($last_import_report['uploads_count_comparison_status']); ?></p>
+					<p>
+						<strong>Uploads Comparison:</strong>
+						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['uploads_count_comparison_status'])); ?>">
+							<?php echo esc_html($last_import_report['uploads_count_comparison_status']); ?>
+						</span>
+					</p>
 				<?php endif; ?>
 
 				<?php if (!empty($last_import_report['plugin_restoration_status'])) : ?>
-					<p><strong>Plugin Restoration Status:</strong> <?php echo esc_html($last_import_report['plugin_restoration_status']); ?></p>
+					<p>
+						<strong>Plugin Restoration:</strong>
+						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['plugin_restoration_status'])); ?>">
+							<?php echo esc_html($last_import_report['plugin_restoration_status']); ?>
+						</span>
+					</p>
 				<?php endif; ?>
 
 				<p><?php echo esc_html($last_import_report['message']); ?></p>
