@@ -683,6 +683,10 @@ function wpzm_handle_import_action() {
 	// Provide post-import guidance so the developer knows what to verify next.
 	$next_actions = array();
 
+	// Track plugin activation-specific issues separately so they can be shown
+	// in their own section instead of being buried inside general warnings.
+	$plugin_activation_issues = array();
+
 	// Track whether URL replacement completed, was skipped, or failed.
 	$url_replacement_status = 'not_started';
 
@@ -1235,7 +1239,7 @@ function wpzm_handle_import_action() {
 			$activation_result = activate_plugin($plugin_path);
 
 			if (is_wp_error($activation_result)) {
-				$plugin_activation_warnings[] = 'Activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message();
+				$plugin_activation_issues[] = 'Activation failed for: ' . $plugin_path . '. Error: ' . $activation_result->get_error_message();
 				continue;
 			}
 		}
@@ -1277,6 +1281,11 @@ function wpzm_handle_import_action() {
 
 	if (!empty($active_plugin_paths)) {
 		$import_steps[] = 'Plugin restoration completed';
+
+		if (!empty($plugin_activation_issues)) {
+			$import_warnings[] = 'One or more plugins could not be activated automatically.';
+		}
+
 	} else {
 		$import_warnings[] = 'No active plugin paths were found in the manifest, so plugin restoration was skipped.';
 		$import_steps[] = 'Plugin restoration skipped';
@@ -1301,26 +1310,28 @@ function wpzm_handle_import_action() {
 	// Save the latest successful import report with a little context so it is
 	// easier to understand later after reloads or repeated test runs.
 	$last_import_report = array(
-		'timestamp'       => current_time('mysql'),
-		'site_name'       => $site_name,
-		'source_site_url' => $source_site_url,
-		'theme_name'      => $theme_name,
-		'message'         => $summary_message,
-		'warnings'        => $import_warnings,
-		'steps'           => $import_steps,
-		'next_actions'    => $next_actions,
+		'timestamp'       			=> current_time('mysql'),
+		'site_name'       			=> $site_name,
+		'source_site_url' 			=> $source_site_url,
+		'theme_name'      			=> $theme_name,
+		'message'         			=> $summary_message,
+		'warnings'        			=> $import_warnings,
+		'plugin_activation_issues'	=> $plugin_activation_issues,
+		'steps'           			=> $import_steps,
+		'next_actions'    			=> $next_actions,
 	);
 
 	update_option('wpzm_last_import_report', $last_import_report);
 
 	// Return the main summary plus structured warnings and steps for clearer admin UI output.
 	return array(
-		'action'       => 'import',
-		'type'         => 'success',
-		'message'      => $summary_message,
-		'warnings'     => $import_warnings,
-		'steps'        => $import_steps,
-		'next_actions' => $next_actions,
+		'action'       				=> 'import',
+		'type'         				=> 'success',
+		'message'      				=> $summary_message,
+		'warnings'     				=> $import_warnings,
+		'plugin_activation_issues' 	=> $plugin_activation_issues,
+		'steps'        				=> $import_steps,
+		'next_actions' 				=> $next_actions,
 	);
 }
 
@@ -1610,6 +1621,16 @@ function wpzm_render_admin_page() {
 					</ul>
 				<?php endif; ?>
 
+				<?php // Show plugin activation problems separately because they often need manual follow-up. ?>
+				<?php if (!empty($import_result['plugin_activation_issues']) && is_array($import_result['plugin_activation_issues'])) : ?>
+					<p><strong>Plugin Activation Issues</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($import_result['plugin_activation_issues'] as $plugin_issue) : ?>
+							<li><?php echo esc_html($plugin_issue); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
 				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
 				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
 					<p><strong>Next Actions</strong></p>
@@ -1657,6 +1678,15 @@ function wpzm_render_admin_page() {
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($last_import_report['warnings'] as $warning_message) : ?>
 							<li><?php echo esc_html($warning_message); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['plugin_activation_issues']) && is_array($last_import_report['plugin_activation_issues'])) : ?>
+					<p><strong>Plugin Activation Issues</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($last_import_report['plugin_activation_issues'] as $plugin_issue) : ?>
+							<li><?php echo esc_html($plugin_issue); ?></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
