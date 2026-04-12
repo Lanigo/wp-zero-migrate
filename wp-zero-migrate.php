@@ -690,6 +690,10 @@ function wpzm_handle_import_action() {
 	// Track whether URL replacement completed, was skipped, or failed.
 	$url_replacement_status = 'not_started';
 
+	// Track the outcome of the uploads count comparison so the final report can
+	// say whether the destination count matched, was lower, or was higher.
+	$uploads_count_comparison_status = 'not_checked';
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -960,22 +964,40 @@ function wpzm_handle_import_action() {
 
 	if (
 		$actual_destination_uploads_file_count !== false &&
-		$uploads_file_count > 0 &&
-		$actual_destination_uploads_file_count < $uploads_file_count
+		$actual_destination_uploads_file_count !== null &&
+		$uploads_file_count > 0
 	) {
-		$import_warnings[] = 'Destination uploads file count is lower than the manifest count. Manifest: ' . $uploads_file_count . '. Destination: ' . $actual_destination_uploads_file_count . '.';
+		if ($actual_destination_uploads_file_count === $uploads_file_count) {
+			$uploads_count_comparison_status = 'matched';
+			$import_steps[] = 'Uploads count matched manifest';
+		} elseif ($actual_destination_uploads_file_count < $uploads_file_count) {
+			$uploads_count_comparison_status = 'lower';
+			$import_warnings[] = 'Destination uploads file count is lower than the manifest count. Manifest: ' . $uploads_file_count . '. Destination: ' . $actual_destination_uploads_file_count . '.';
+			$import_steps[] = 'Uploads count was lower than manifest';
+		} else {
+			$uploads_count_comparison_status = 'higher';
+			$import_steps[] = 'Uploads count was higher than manifest';
+		}
 	}
 
 	if (
 		$actual_destination_uploads_file_count !== false &&
-		$uploads_file_count > 0 &&
-		$actual_destination_uploads_file_count !== $uploads_file_count
+		$actual_destination_uploads_file_count !== null &&
+		$uploads_file_count <= 0
 	) {
-		$import_steps[] = 'Uploads count compared against manifest';
+		$import_warnings[] = 'Uploads count comparison could not be completed because the manifest uploads file count was zero or missing.';
 	}
 
 	if ($actual_destination_uploads_file_count !== false && $actual_destination_uploads_file_count !== null) {
 		$summary_message .= ' Destination Uploads File Count: ' . $actual_destination_uploads_file_count . '.';
+
+		if ($uploads_count_comparison_status === 'matched') {
+			$summary_message .= ' Uploads Count Match: Yes.';
+		} elseif ($uploads_count_comparison_status === 'lower') {
+			$summary_message .= ' Uploads Count Match: No. Destination count is lower than manifest.';
+		} elseif ($uploads_count_comparison_status === 'higher') {
+			$summary_message .= ' Uploads Count Match: No. Destination count is higher than manifest.';
+		}
 	}
 
 	$themes_imported = wpzm_copy_directory($themes_dir, $destination_themes_dir);
