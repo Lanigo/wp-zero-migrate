@@ -1308,29 +1308,47 @@ function wpzm_handle_import_action() {
 	// Keep the summary message focused on the high-level import outcome.
 	// Detailed warnings, completed steps, and next actions are rendered separately in the admin UI.
 
-		// Add a post-import checklist that responds to what actually happened during import.
-	$next_actions[] = 'Visit the site frontend and confirm the imported theme, menus, and styling are loading correctly.';
-	$next_actions[] = 'Open Settings > Permalinks and resave permalinks if pages or posts are not loading correctly.';
+		// Build post-import checklist items in two groups:
+	// items that are always worth checking, and items that only matter when
+	// a specific condition or issue was detected during import.
+	$always_check_actions = array();
+	$only_if_needed_actions = array();
+
+	$always_check_actions[] = 'Visit the site frontend and confirm the imported theme, menus, and styling are loading correctly.';
+	$always_check_actions[] = 'Open Settings > Permalinks and resave permalinks if pages or posts are not loading correctly.';
+	$always_check_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
 
 	if ($source_site_used_elementor) {
-		$next_actions[] = 'Elementor was active on the source site. Run Elementor URL replacement and regenerate CSS if needed.';
+		$only_if_needed_actions[] = 'Elementor was active on the source site. Run Elementor URL replacement and regenerate CSS if needed.';
 	}
 
 	// Only show plugin follow-up guidance when activation problems actually occurred.
 	if (!empty($plugin_activation_issues)) {
-		$next_actions[] = 'Review plugin activation issues and dependency order, especially WooCommerce add-ons that may require WooCommerce to be active first.';
+		$only_if_needed_actions[] = 'Review plugin activation issues and dependency order, especially WooCommerce add-ons that may require WooCommerce to be active first.';
 	}
 
 	if ($uploads_count_comparison_status === 'lower') {
-		$next_actions[] = 'Check the Media Library and uploads folder because the destination uploads count is lower than the manifest count.';
-	} elseif ($uploads_count_comparison_status === 'higher') {
-		$next_actions[] = 'Review the Media Library if needed because the destination uploads count is higher than the manifest count.';
-	} else {
-		$next_actions[] = 'Check the Media Library and key pages to confirm uploads were imported correctly.';
+		$only_if_needed_actions[] = 'Check the uploads folder because fewer files were found in the destination site than expected.';
 	}
 
 	if ($url_replacement_status === 'skipped') {
-		$next_actions[] = 'Review site URLs manually because automatic URL replacement did not run.';
+		$only_if_needed_actions[] = 'Review site URLs manually because automatic URL replacement did not run.';
+	}
+
+	$next_actions = array();
+
+	if (!empty($always_check_actions)) {
+		$next_actions[] = 'Always check:';
+		foreach ($always_check_actions as $always_check_action) {
+			$next_actions[] = $always_check_action;
+		}
+	}
+
+	if (!empty($only_if_needed_actions)) {
+		$next_actions[] = 'Only if needed:';
+		foreach ($only_if_needed_actions as $only_if_needed_action) {
+			$next_actions[] = $only_if_needed_action;
+		}
 	}
 
 	if ($url_replacement_status === 'not_started') {
