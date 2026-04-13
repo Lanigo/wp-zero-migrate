@@ -1637,10 +1637,10 @@ function wpzm_get_status_badge_style($status) {
 	switch ($status) {
 		case 'completed':
 		case 'matched':
+		case 'higher':
 		case 'completed_cleanly':
 			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#d1e7dd; color:#0f5132; font-weight:600;';
 
-		case 'higher':
 		case 'skipped':
 		case 'completed_with_issues':
 			return 'display:inline-block; padding:2px 8px; border-radius:12px; background:#fff3cd; color:#664d03; font-weight:600;';
@@ -1662,8 +1662,8 @@ function wpzm_format_status_label($status) {
 		'completed_cleanly' => 'Completed cleanly',
 		'completed_with_issues' => 'Completed with issues',
 		'skipped' => 'Skipped',
-		'higher' => 'Higher than manifest',
-		'lower' => 'Lower than manifest',
+		'higher' => 'More files found',
+		'lower' => 'Fewer files found',
 		'not_checked' => 'Not checked',
 		'not_started' => 'Not started',
 	);
