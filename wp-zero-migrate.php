@@ -1358,34 +1358,38 @@ function wpzm_handle_import_action() {
 	// Save the latest successful import report with a little context so it is
 	// easier to understand later after reloads or repeated test runs.
 	$last_import_report = array(
-		'timestamp'       			=> current_time('mysql'),
-		'site_name'       			=> $site_name,
-		'source_site_url' 			=> $source_site_url,
-		'theme_name'      			=> $theme_name,
-		'url_replacement_status'         => $url_replacement_status,
-		'uploads_count_comparison_status' => $uploads_count_comparison_status,
-		'plugin_restoration_status'      => $plugin_restoration_status,
-		'message'         			=> $summary_message,
-		'warnings'        			=> $import_warnings,
-		'plugin_activation_issues'	=> $plugin_activation_issues,
-		'steps'           			=> $import_steps,
-		'next_actions'    			=> $next_actions,
+		'timestamp'       					=> current_time('mysql'),
+		'site_name'       					=> $site_name,
+		'source_site_url' 					=> $source_site_url,
+		'theme_name'     					=> $theme_name,
+		'url_replacement_status'          	=> $url_replacement_status,
+		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
+		'plugin_restoration_status'      	=> $plugin_restoration_status,
+		'message'         					=> $summary_message,
+		'warnings'        					=> $import_warnings,
+		'plugin_activation_issues'			=> $plugin_activation_issues,
+		'steps'           					=> $import_steps,
+		'next_actions'    					=> $next_actions,
 	);
 
 	update_option('wpzm_last_import_report', $last_import_report);
 
 	// Return the main summary plus structured warnings and steps for clearer admin UI output.
 	return array(
-		'action'       				=> 'import',
-		'type'         				=> 'success',
-		'url_replacement_status'          => $url_replacement_status,
-		'uploads_count_comparison_status' => $uploads_count_comparison_status,
-		'plugin_restoration_status'       => $plugin_restoration_status,
-		'message'      				=> $summary_message,
-		'warnings'     				=> $import_warnings,
-		'plugin_activation_issues' 	=> $plugin_activation_issues,
-		'steps'        				=> $import_steps,
-		'next_actions' 				=> $next_actions,
+		'action'       						=> 'import',
+		'type'         						=> 'success',
+		'timestamp'       					=> current_time('mysql'),
+		'site_name'       					=> $site_name,
+		'source_site_url' 					=> $source_site_url,
+		'theme_name'     					=> $theme_name,
+		'url_replacement_status'          	=> $url_replacement_status,
+		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
+		'plugin_restoration_status'       	=> $plugin_restoration_status,
+		'message'      						=> $summary_message,
+		'warnings'     						=> $import_warnings,
+		'plugin_activation_issues' 			=> $plugin_activation_issues,
+		'steps'        						=> $import_steps,
+		'next_actions' 						=> $next_actions,
 	);
 }
 
@@ -1699,6 +1703,22 @@ function wpzm_render_admin_page() {
 		<?php // Show the import summary first, then render structured warnings and completed steps when available. ?>
 		<?php if (!empty($import_result)) : ?>
 			<div class="notice notice-<?php echo esc_attr($import_result['type']); ?>">
+				<?php // Show a little live import context so the current result is easier to identify. ?>
+				<?php if (!empty($import_result['timestamp'])) : ?>
+					<p><em><?php echo esc_html($import_result['timestamp']); ?></em></p>
+				<?php endif; ?>
+
+				<?php if (!empty($import_result['site_name'])) : ?>
+					<p><strong>Site:</strong> <?php echo esc_html($import_result['site_name']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($import_result['source_site_url'])) : ?>
+					<p><strong>Source URL:</strong> <?php echo esc_html($import_result['source_site_url']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($import_result['theme_name'])) : ?>
+					<p><strong>Theme:</strong> <?php echo esc_html($import_result['theme_name']); ?></p>
+				<?php endif; ?>
 				<p><?php echo esc_html($import_result['message']); ?></p>
 
 						<?php // Show key outcome statuses for the current import. ?>
