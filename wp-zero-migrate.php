@@ -1768,21 +1768,21 @@ function wpzm_render_admin_page() {
 					</ul>
 				<?php endif; ?>
 
-				<?php if (!empty($import_result['steps']) && is_array($import_result['steps'])) : ?>
-					<p><strong>Completed Steps</strong></p>
-					<ul style="list-style: disc; margin-left: 20px;">
-						<?php foreach ($import_result['steps'] as $step_message) : ?>
-							<li><?php echo esc_html($step_message); ?></li>
-						<?php endforeach; ?>
-					</ul>
-				<?php endif; ?>
-
 				<?php // Show plugin activation problems separately because they often need manual follow-up. ?>
 				<?php if (!empty($import_result['plugin_activation_issues']) && is_array($import_result['plugin_activation_issues'])) : ?>
 					<p><strong>Plugin Activation Issues</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($import_result['plugin_activation_issues'] as $plugin_issue) : ?>
 							<li><?php echo esc_html($plugin_issue); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($import_result['steps']) && is_array($import_result['steps'])) : ?>
+					<p><strong>Completed Steps</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($import_result['steps'] as $step_message) : ?>
+							<li><?php echo esc_html($step_message); ?></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
@@ -1857,20 +1857,20 @@ function wpzm_render_admin_page() {
 
 				<p><?php echo esc_html($last_import_report['message']); ?></p>
 
-				<?php if (!empty($last_import_report['warnings']) && is_array($last_import_report['warnings'])) : ?>
-					<p><strong>Warnings</strong></p>
-					<ul style="list-style: disc; margin-left: 20px;">
-						<?php foreach ($last_import_report['warnings'] as $warning_message) : ?>
-							<li><?php echo esc_html($warning_message); ?></li>
-						<?php endforeach; ?>
-					</ul>
-				<?php endif; ?>
-
 				<?php if (!empty($last_import_report['plugin_activation_issues']) && is_array($last_import_report['plugin_activation_issues'])) : ?>
 					<p><strong>Plugin Activation Issues</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($last_import_report['plugin_activation_issues'] as $plugin_issue) : ?>
 							<li><?php echo esc_html($plugin_issue); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
+				<?php if (!empty($last_import_report['warnings']) && is_array($last_import_report['warnings'])) : ?>
+					<p><strong>Warnings</strong></p>
+					<ul style="list-style: disc; margin-left: 20px;">
+						<?php foreach ($last_import_report['warnings'] as $warning_message) : ?>
+							<li><?php echo esc_html($warning_message); ?></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
