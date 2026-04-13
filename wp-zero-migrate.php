@@ -1806,12 +1806,18 @@ function wpzm_render_admin_page() {
 					<p><strong>What to check next</strong></p>
 					<ul style="list-style: none; margin-left: 0; padding-left: 0;">
 						<?php foreach ($import_result['next_actions'] as $next_action) : ?>
-							<li style="margin-bottom: 6px;">
-								<label>
-									<input type="checkbox" disabled style="margin-right: 6px;">
+							<?php if ($next_action === 'Always check:' || $next_action === 'Only if needed:') : ?>
+								<li style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">
 									<?php echo esc_html($next_action); ?>
-								</label>
-							</li>
+								</li>
+							<?php else : ?>
+								<li style="margin-bottom: 6px;">
+									<label>
+										<input type="checkbox" disabled style="margin-right: 6px;">
+										<?php echo esc_html($next_action); ?>
+									</label>
+								</li>
+							<?php endif; ?>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
@@ -1903,21 +1909,27 @@ function wpzm_render_admin_page() {
 					</ul>
 				<?php endif; ?>
 
-				<?php // Let the user clear the saved report once it is no longer useful. ?>
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
 					<p><strong>What to check next</strong></p>
 					<ul style="list-style: none; margin-left: 0; padding-left: 0;">
 						<?php foreach ($last_import_report['next_actions'] as $next_action) : ?>
-							<li style="margin-bottom: 6px;">
-								<label>
-									<input type="checkbox" disabled style="margin-right: 6px;">
+							<?php if ($next_action === 'Always check:' || $next_action === 'Only if needed:') : ?>
+								<li style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">
 									<?php echo esc_html($next_action); ?>
-								</label>
-							</li>
+								</li>
+							<?php else : ?>
+								<li style="margin-bottom: 6px;">
+									<label>
+										<input type="checkbox" disabled style="margin-right: 6px;">
+										<?php echo esc_html($next_action); ?>
+									</label>
+								</li>
+							<?php endif; ?>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
 
+				<?php // Let the user clear the saved report once it is no longer useful. ?>
 				<form method="post" style="margin-top: 12px;">
 					<?php wp_nonce_field('wpzm_clear_last_import_report_action', 'wpzm_clear_last_import_report_nonce'); ?>
 					<p>
