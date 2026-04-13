@@ -1785,7 +1785,7 @@ function wpzm_render_admin_page() {
 
 				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
 				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
-					<p><strong>Next Actions</strong></p>
+					<p><strong>What to Check Next</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($import_result['next_actions'] as $next_action) : ?>
 							<li><?php echo esc_html($next_action); ?></li>
@@ -1882,7 +1882,7 @@ function wpzm_render_admin_page() {
 
 				<?php // Let the user clear the saved report once it is no longer useful. ?>
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
-					<p><strong>Next Actions</strong></p>
+					<p><strong>What to Check Next</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($last_import_report['next_actions'] as $next_action) : ?>
 							<li><?php echo esc_html($next_action); ?></li>
