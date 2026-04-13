@@ -937,7 +937,7 @@ function wpzm_handle_import_action() {
 	// Record that manifest quality checks were completed before import work begins.
 	$import_steps[] = 'Manifest metadata reviewed';
 
-		// Build a shorter high-level summary for the admin UI.
+	// Build a shorter high-level summary for the admin UI.
 	$summary_message = 'Import completed. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
@@ -1129,11 +1129,6 @@ function wpzm_handle_import_action() {
 
 	$sql_statement_count = count($sql_statements);
 
-	$summary_message .= ' Uploads Imported: ' . ($uploads_imported ? 'Yes' : 'No') . '.';
-	$summary_message .= ' Themes Imported: ' . ($themes_imported ? 'Yes' : 'No') . '.';
-	$summary_message .= ' Plugins Imported: ' . ($plugins_imported ? 'Yes' : 'No') . '.';
-	$summary_message .= ' SQL Statements Parsed: ' . $sql_statement_count . '.';
-
 	$import_steps[] = 'Database imported';
 
 	if (!empty($plugin_activation_warnings)) {
@@ -1213,11 +1208,6 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'URL replacement completed';
 
 		$summary_message .= ' Site URL Updated: Yes.';
-		$summary_message .= ' URL Replacements - Options: ' . $options_replaced . '.';
-		$summary_message .= ' Posts: ' . $posts_replaced . '.';
-		$summary_message .= ' Postmeta: ' . $postmeta_replaced . '.';
-		$summary_message .= ' Usermeta: ' . $usermeta_replaced . '.';
-		$summary_message .= ' Commentmeta: ' . $commentmeta_replaced . '.';
 	} else {
 		// If either site URL is missing, skip replacement and report it clearly.
 		$url_replacement_status = 'skipped';
