@@ -1775,7 +1775,7 @@ function wpzm_render_admin_page() {
 				<?php endif; ?>
 
 				<?php if (!empty($import_result['steps']) && is_array($import_result['steps'])) : ?>
-					<p><strong>Completed Steps</strong></p>
+					<p><strong>What Completed</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($import_result['steps'] as $step_message) : ?>
 							<li><?php echo esc_html($step_message); ?></li>
@@ -1872,7 +1872,7 @@ function wpzm_render_admin_page() {
 				<?php endif; ?>
 
 				<?php if (!empty($last_import_report['steps']) && is_array($last_import_report['steps'])) : ?>
-					<p><strong>Completed Steps</strong></p>
+					<p><strong>What Completed</strong></p>
 					<ul style="list-style: disc; margin-left: 20px;">
 						<?php foreach ($last_import_report['steps'] as $step_message) : ?>
 							<li><?php echo esc_html($step_message); ?></li>
