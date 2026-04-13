@@ -1305,10 +1305,6 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'Plugin restoration skipped';
 	}
 
-	if (!empty($plugin_activation_issues)) {
-		$import_warnings[] = 'One or more plugins could not be activated automatically.';
-	}
-
 	// Keep the summary message focused on the high-level import outcome.
 	// Detailed warnings, completed steps, and next actions are rendered separately in the admin UI.
 
