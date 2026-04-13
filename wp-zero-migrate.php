@@ -1668,6 +1668,28 @@ function wpzm_get_status_badge_style($status) {
 	}
 }
 
+// Convert internal import status values into human-readable labels for the admin UI.
+function wpzm_format_status_label($status) {
+
+	$status_labels = array(
+		'completed' => 'Completed',
+		'matched' => 'Matched',
+		'completed_cleanly' => 'Completed cleanly',
+		'completed_with_issues' => 'Completed with issues',
+		'skipped' => 'Skipped',
+		'higher' => 'Higher than manifest',
+		'lower' => 'Lower than manifest',
+		'not_checked' => 'Not checked',
+		'not_started' => 'Not started',
+	);
+
+	if (isset($status_labels[$status])) {
+		return $status_labels[$status];
+	}
+
+	return ucwords(str_replace('_', ' ', $status));
+}
+
 function wpzm_render_admin_page() {
 	$export_result = wpzm_handle_export_action();
 	$import_result = wpzm_handle_import_action();
@@ -1711,7 +1733,7 @@ function wpzm_render_admin_page() {
 									<p>
 										<strong>URL Replacement:</strong>
 										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['url_replacement_status'])); ?>">
-											<?php echo esc_html($import_result['url_replacement_status']); ?>
+											<?php echo esc_html(wpzm_format_status_label($import_result['url_replacement_status'])); ?>
 										</span>
 									</p>
 								<?php endif; ?>
@@ -1720,7 +1742,7 @@ function wpzm_render_admin_page() {
 									<p>
 										<strong>Uploads Comparison:</strong>
 										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['uploads_count_comparison_status'])); ?>">
-											<?php echo esc_html($import_result['uploads_count_comparison_status']); ?>
+											<?php echo esc_html(wpzm_format_status_label($import_result['uploads_count_comparison_status'])); ?>
 										</span>
 									</p>
 								<?php endif; ?>
@@ -1729,7 +1751,7 @@ function wpzm_render_admin_page() {
 									<p>
 										<strong>Plugin Restoration:</strong>
 										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['plugin_restoration_status'])); ?>">
-											<?php echo esc_html($import_result['plugin_restoration_status']); ?>
+											<?php echo esc_html(wpzm_format_status_label($import_result['plugin_restoration_status'])); ?>
 										</span>
 									</p>
 								<?php endif; ?>
