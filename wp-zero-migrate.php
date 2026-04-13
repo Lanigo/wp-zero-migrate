@@ -1131,12 +1131,6 @@ function wpzm_handle_import_action() {
 
 	$import_steps[] = 'Database imported';
 
-	if (!empty($plugin_activation_warnings)) {
-		foreach ($plugin_activation_warnings as $warning_message) {
-			$import_warnings[] = $warning_message;
-		}
-	}
-
 	global $wpdb;
 
 	if (empty($sql_statements)) {
