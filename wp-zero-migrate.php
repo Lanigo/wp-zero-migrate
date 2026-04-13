@@ -937,15 +937,14 @@ function wpzm_handle_import_action() {
 	// Record that manifest quality checks were completed before import work begins.
 	$import_steps[] = 'Manifest metadata reviewed';
 
-	// Build a shorter high-level summary for the admin UI.
+		// Build a shorter high-level summary for the admin UI.
 	$summary_message = 'Import completed. ';
 	$summary_message .= 'Site: ' . $site_name . '. ';
 	$summary_message .= 'Theme: ' . $theme_name . '. ';
 	$summary_message .= 'Active Plugins: ' . $active_plugin_count . '. ';
 	$summary_message .= 'Source DB Prefix: ' . (!empty($source_database_prefix) ? $source_database_prefix : '[missing]') . '. ';
 	$summary_message .= 'Destination DB Prefix: ' . (!empty($destination_database_prefix) ? $destination_database_prefix : '[missing]') . '. ';
-	$summary_message .= 'Prefix Remap Needed: ' . ($prefix_remap_needed ? 'Yes' : 'No') . '.';atabase_prefix : '[missing]') . '.';
-	$summary_message .= ' Prefix Remap Needed: ' . ($prefix_remap_needed ? 'Yes' : 'No') . '.';
+	$summary_message .= 'Prefix Remap Needed: ' . ($prefix_remap_needed ? 'Yes' : 'No') . '.';
 
 	$uploads_imported = wpzm_copy_directory($uploads_dir, $destination_uploads_dir);
 
