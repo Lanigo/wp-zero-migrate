@@ -1831,7 +1831,7 @@ function wpzm_render_admin_page() {
 					<p>
 						<strong>URL Replacement:</strong>
 						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['url_replacement_status'])); ?>">
-							<?php echo esc_html($last_import_report['url_replacement_status']); ?>
+							<?php echo esc_html(wpzm_format_status_label($last_import_report['url_replacement_status'])); ?>
 						</span>
 					</p>
 				<?php endif; ?>
@@ -1840,7 +1840,7 @@ function wpzm_render_admin_page() {
 					<p>
 						<strong>Uploads Comparison:</strong>
 						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['uploads_count_comparison_status'])); ?>">
-							<?php echo esc_html($last_import_report['uploads_count_comparison_status']); ?>
+							<?php echo esc_html(wpzm_format_status_label($last_import_report['uploads_count_comparison_status'])); ?>
 						</span>
 					</p>
 				<?php endif; ?>
@@ -1849,7 +1849,7 @@ function wpzm_render_admin_page() {
 					<p>
 						<strong>Plugin Restoration:</strong>
 						<span style="<?php echo esc_attr(wpzm_get_status_badge_style($last_import_report['plugin_restoration_status'])); ?>">
-							<?php echo esc_html($last_import_report['plugin_restoration_status']); ?>
+							<?php echo esc_html(wpzm_format_status_label($last_import_report['plugin_restoration_status'])); ?>
 						</span>
 					</p>
 				<?php endif; ?>
