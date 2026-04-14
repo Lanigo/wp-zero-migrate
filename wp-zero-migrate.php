@@ -2051,7 +2051,15 @@ function wpzm_render_admin_page() {
 				});
 				clearButtons.forEach(function (button) {
 					button.addEventListener('click', function () {
-						checklistCheckboxes.forEach(function (checkbox) {
+						var reportBox = button.closest('.notice');
+
+						if (!reportBox) {
+							return;
+						}
+
+						var reportCheckboxes = reportBox.querySelectorAll('.wpzm-checklist-checkbox');
+
+						reportCheckboxes.forEach(function (checkbox) {
 							var checklistGroup = checkbox.getAttribute('data-checklist-group');
 							var checklistIndex = checkbox.getAttribute('data-checklist-index');
 							var storageKey = 'wpzm_checklist_' + checklistGroup + '_' + checklistIndex;
