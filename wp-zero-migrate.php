@@ -1807,7 +1807,7 @@ function wpzm_render_admin_page() {
 							<?php foreach ($import_result['next_actions']['always_check'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" disabled style="margin-right: 6px;">
+										<input type="checkbox" style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1821,7 +1821,7 @@ function wpzm_render_admin_page() {
 							<?php foreach ($import_result['next_actions']['only_if_needed'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" disabled style="margin-right: 6px;">
+										<input type="checkbox" style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1925,7 +1925,7 @@ function wpzm_render_admin_page() {
 							<?php foreach ($last_import_report['next_actions']['always_check'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" disabled style="margin-right: 6px;">
+										<input type="checkbox" style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1939,7 +1939,7 @@ function wpzm_render_admin_page() {
 							<?php foreach ($last_import_report['next_actions']['only_if_needed'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" disabled style="margin-right: 6px;">
+										<input type="checkbox" style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
