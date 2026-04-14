@@ -1801,13 +1801,20 @@ function wpzm_render_admin_page() {
 				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
 				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
 					<p><strong>What to check next</strong></p>
+
 					<?php if (!empty($import_result['next_actions']['always_check'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
 						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-							<?php foreach ($import_result['next_actions']['always_check'] as $next_action) : ?>
+							<?php foreach ($import_result['next_actions']['always_check'] as $index => $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" style="margin-right: 6px;">
+										<input
+											type="checkbox"
+											class="wpzm-checklist-checkbox"
+											data-checklist-group="live-always-check"
+											data-checklist-index="<?php echo esc_attr($index); ?>"
+											style="margin-right: 6px;"
+										>
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1818,10 +1825,16 @@ function wpzm_render_admin_page() {
 					<?php if (!empty($import_result['next_actions']['only_if_needed'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Only if needed</p>
 						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-							<?php foreach ($import_result['next_actions']['only_if_needed'] as $next_action) : ?>
+							<?php foreach ($import_result['next_actions']['only_if_needed'] as $index => $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" style="margin-right: 6px;">
+										<input
+											type="checkbox"
+											class="wpzm-checklist-checkbox"
+											data-checklist-group="live-only-if-needed"
+											data-checklist-index="<?php echo esc_attr($index); ?>"
+											style="margin-right: 6px;"
+										>
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1919,13 +1932,20 @@ function wpzm_render_admin_page() {
 
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
 					<p><strong>What to check next</strong></p>
+
 					<?php if (!empty($last_import_report['next_actions']['always_check'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
 						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-							<?php foreach ($last_import_report['next_actions']['always_check'] as $next_action) : ?>
+							<?php foreach ($last_import_report['next_actions']['always_check'] as $index => $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" style="margin-right: 6px;">
+										<input
+											type="checkbox"
+											class="wpzm-checklist-checkbox"
+											data-checklist-group="saved-always-check"
+											data-checklist-index="<?php echo esc_attr($index); ?>"
+											style="margin-right: 6px;"
+										>
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1936,10 +1956,16 @@ function wpzm_render_admin_page() {
 					<?php if (!empty($last_import_report['next_actions']['only_if_needed'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Only if needed</p>
 						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-							<?php foreach ($last_import_report['next_actions']['only_if_needed'] as $next_action) : ?>
+							<?php foreach ($last_import_report['next_actions']['only_if_needed'] as $index => $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
-										<input type="checkbox" style="margin-right: 6px;">
+										<input
+											type="checkbox"
+											class="wpzm-checklist-checkbox"
+											data-checklist-group="saved-only-if-needed"
+											data-checklist-index="<?php echo esc_attr($index); ?>"
+											style="margin-right: 6px;"
+										>
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
@@ -1989,13 +2015,38 @@ function wpzm_render_admin_page() {
 			</p>
 		</form>
 
-		<?php if (!empty($latest_zip_url)) : ?>
+				<?php if (!empty($latest_zip_url)) : ?>
 				<p>
 					<a href="<?php echo esc_url($latest_zip_url); ?>" class="button" download>
 						Download Latest Export
 					</a>
 				</p>
 		<?php endif; ?>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				var checklistCheckboxes = document.querySelectorAll('.wpzm-checklist-checkbox');
+
+				checklistCheckboxes.forEach(function (checkbox) {
+					var checklistGroup = checkbox.getAttribute('data-checklist-group');
+					var checklistIndex = checkbox.getAttribute('data-checklist-index');
+					var storageKey = 'wpzm_checklist_' + checklistGroup + '_' + checklistIndex;
+
+					if (localStorage.getItem(storageKey) === '1') {
+						checkbox.checked = true;
+					}
+
+					checkbox.addEventListener('change', function () {
+						if (checkbox.checked) {
+							localStorage.setItem(storageKey, '1');
+						} else {
+							localStorage.removeItem(storageKey);
+						}
+					});
+				});
+			});
+		</script>
+	</div>
 	<?php
 }
 
