@@ -1800,7 +1800,10 @@ function wpzm_render_admin_page() {
 
 				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
 				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
-					<p><strong>What to check next</strong></p>
+					<p style="display:flex; justify-content:space-between; align-items:center;">
+						<strong>What to check next</strong>
+						<button type="button" class="button wpzm-clear-checklist">Clear progress</button>
+					</p>
 
 					<?php if (!empty($import_result['next_actions']['always_check'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
@@ -1931,7 +1934,10 @@ function wpzm_render_admin_page() {
 				<?php endif; ?>
 
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
-					<p><strong>What to check next</strong></p>
+					<p style="display:flex; justify-content:space-between; align-items:center;">
+						<strong>What to check next</strong>
+						<button type="button" class="button wpzm-clear-checklist">Clear progress</button>
+					</p>
 
 					<?php if (!empty($last_import_report['next_actions']['always_check'])) : ?>
 						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
@@ -2026,6 +2032,7 @@ function wpzm_render_admin_page() {
 		<script>
 			document.addEventListener('DOMContentLoaded', function () {
 				var checklistCheckboxes = document.querySelectorAll('.wpzm-checklist-checkbox');
+				var clearButtons = document.querySelectorAll('.wpzm-clear-checklist');
 
 				checklistCheckboxes.forEach(function (checkbox) {
 					var checklistGroup = checkbox.getAttribute('data-checklist-group');
@@ -2042,6 +2049,18 @@ function wpzm_render_admin_page() {
 						} else {
 							localStorage.removeItem(storageKey);
 						}
+					});
+				});
+				clearButtons.forEach(function (button) {
+					button.addEventListener('click', function () {
+						checklistCheckboxes.forEach(function (checkbox) {
+							var checklistGroup = checkbox.getAttribute('data-checklist-group');
+							var checklistIndex = checkbox.getAttribute('data-checklist-index');
+							var storageKey = 'wpzm_checklist_' + checklistGroup + '_' + checklistIndex;
+
+							checkbox.checked = false;
+							localStorage.removeItem(storageKey);
+						});
 					});
 				});
 			});
