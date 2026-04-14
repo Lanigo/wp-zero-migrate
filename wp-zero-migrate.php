@@ -1226,8 +1226,6 @@ function wpzm_handle_import_action() {
 		$current_active_plugins = array();
 	}
 
-	$plugin_activation_warnings = array();
-
 	foreach ($current_active_plugins as $current_plugin_path) {
 		if (in_array($current_plugin_path, $protected_plugins, true)) {
 			continue;
