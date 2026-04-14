@@ -1801,22 +1801,33 @@ function wpzm_render_admin_page() {
 				<?php // Show a simple post-import checklist to guide the next verification steps. ?>
 				<?php if (!empty($import_result['next_actions']) && is_array($import_result['next_actions'])) : ?>
 					<p><strong>What to check next</strong></p>
-					<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-						<?php foreach ($import_result['next_actions'] as $next_action) : ?>
-							<?php if ($next_action === 'Always check:' || $next_action === 'Only if needed:') : ?>
-								<li style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">
-									<?php echo esc_html($next_action); ?>
-								</li>
-							<?php else : ?>
+					<?php if (!empty($import_result['next_actions']['always_check'])) : ?>
+						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
+						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
+							<?php foreach ($import_result['next_actions']['always_check'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
 										<input type="checkbox" disabled style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</ul>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+
+					<?php if (!empty($import_result['next_actions']['only_if_needed'])) : ?>
+						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Only if needed</p>
+						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
+							<?php foreach ($import_result['next_actions']['only_if_needed'] as $next_action) : ?>
+								<li style="margin-bottom: 6px;">
+									<label>
+										<input type="checkbox" disabled style="margin-right: 6px;">
+										<?php echo esc_html($next_action); ?>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>
@@ -1908,22 +1919,33 @@ function wpzm_render_admin_page() {
 
 				<?php if (!empty($last_import_report['next_actions']) && is_array($last_import_report['next_actions'])) : ?>
 					<p><strong>What to check next</strong></p>
-					<ul style="list-style: none; margin-left: 0; padding-left: 0;">
-						<?php foreach ($last_import_report['next_actions'] as $next_action) : ?>
-							<?php if ($next_action === 'Always check:' || $next_action === 'Only if needed:') : ?>
-								<li style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">
-									<?php echo esc_html($next_action); ?>
-								</li>
-							<?php else : ?>
+					<?php if (!empty($last_import_report['next_actions']['always_check'])) : ?>
+						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Always check</p>
+						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
+							<?php foreach ($last_import_report['next_actions']['always_check'] as $next_action) : ?>
 								<li style="margin-bottom: 6px;">
 									<label>
 										<input type="checkbox" disabled style="margin-right: 6px;">
 										<?php echo esc_html($next_action); ?>
 									</label>
 								</li>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</ul>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+
+					<?php if (!empty($last_import_report['next_actions']['only_if_needed'])) : ?>
+						<p style="margin-top: 10px; margin-bottom: 6px; font-weight: 600;">Only if needed</p>
+						<ul style="list-style: none; margin-left: 0; padding-left: 0;">
+							<?php foreach ($last_import_report['next_actions']['only_if_needed'] as $next_action) : ?>
+								<li style="margin-bottom: 6px;">
+									<label>
+										<input type="checkbox" disabled style="margin-right: 6px;">
+										<?php echo esc_html($next_action); ?>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
 				<?php endif; ?>
 
 				<?php // Let the user clear the saved report once it is no longer useful. ?>
