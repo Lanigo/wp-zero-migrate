@@ -1335,20 +1335,17 @@ function wpzm_handle_import_action() {
 		$only_if_needed_actions[] = 'Review site URLs manually because automatic URL replacement did not run.';
 	}
 
-	$next_actions = array();
+	$next_actions = array(
+		'always_check'   => array(),
+		'only_if_needed' => array(),
+	);
 
 	if (!empty($always_check_actions)) {
-		$next_actions[] = 'Always check:';
-		foreach ($always_check_actions as $always_check_action) {
-			$next_actions[] = $always_check_action;
-		}
+		$next_actions['always_check'] = $always_check_actions;
 	}
 
 	if (!empty($only_if_needed_actions)) {
-		$next_actions[] = 'Only if needed:';
-		foreach ($only_if_needed_actions as $only_if_needed_action) {
-			$next_actions[] = $only_if_needed_action;
-		}
+		$next_actions['only_if_needed'] = $only_if_needed_actions;
 	}
 
 	if ($url_replacement_status === 'not_started') {
