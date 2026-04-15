@@ -1389,6 +1389,11 @@ function wpzm_handle_import_action() {
 		$plugin_restoration_status === 'skipped'
 	) {
 		$import_health_status = 'needs_review';
+
+		// Record one clear explanation so the health badge is not just a vague status.
+		if (!empty($plugin_activation_issues)) {
+			$import_health_reasons[] = 'Some plugins could not be activated.';
+		}
 	} else {
 		$import_health_status = 'healthy';
 	}
