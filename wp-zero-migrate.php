@@ -1098,7 +1098,6 @@ function wpzm_handle_import_action() {
 		}
 
 		if ($plugin_directory_name === 'wp-zero-migrate') {
-			$import_warnings[] = 'Skipped importing the packaged WP Zero Migrate plugin folder to avoid overwriting the destination plugin version.';
 			continue;
 		}
 
