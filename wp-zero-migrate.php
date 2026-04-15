@@ -701,6 +701,10 @@ function wpzm_handle_import_action() {
 	// Track a simple top-level health status for the import report UI.
 	$import_health_status = 'healthy';
 
+	// Store human-readable reasons explaining WHY a migration is not fully healthy.
+	// This allows the UI to explain issues instead of forcing the user to investigate.
+	$import_health_reasons = array();
+
 	// Create a unique ID for this import run so checklist progress can be
 	// stored separately for each report instead of leaking across imports.
 	$import_id = time();
