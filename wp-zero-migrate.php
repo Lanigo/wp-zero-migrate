@@ -698,6 +698,8 @@ function wpzm_handle_import_action() {
 	// whether plugins were restored cleanly, with issues, or skipped.
 	$plugin_restoration_status = 'not_started';
 
+	$import_id = time();
+
 	// Create a timestamped import working directory.
 	$import_base_dir = WP_CONTENT_DIR . '/wpzm-imports';
 	$timestamp = date('Y-m-d-H-i-s');
@@ -1226,6 +1228,8 @@ function wpzm_handle_import_action() {
 		$current_active_plugins = array();
 	}
 
+	$plugin_activation_warnings = array();
+
 	foreach ($current_active_plugins as $current_plugin_path) {
 		if (in_array($current_plugin_path, $protected_plugins, true)) {
 			continue;
@@ -1367,6 +1371,7 @@ function wpzm_handle_import_action() {
 	// Save the latest successful import report with a little context so it is
 	// easier to understand later after reloads or repeated test runs.
 	$last_import_report = array(
+		'import_id' 						=> $import_id,
 		'timestamp'       					=> current_time('mysql'),
 		'site_name'       					=> $site_name,
 		'source_site_url' 					=> $source_site_url,
@@ -1814,6 +1819,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="live-always-check"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											data-import-id="<?php echo esc_attr($import_id); ?>"
 											style="margin-right: 6px;"
 										>
 										<?php echo esc_html($next_action); ?>
@@ -1834,6 +1840,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="live-only-if-needed"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											data-import-id="<?php echo esc_attr($import_id); ?>"
 											style="margin-right: 6px;"
 										>
 										<?php echo esc_html($next_action); ?>
@@ -1948,6 +1955,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="saved-always-check"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											data-import-id="<?php echo esc_attr($last_import_report['import_id']); ?>"
 											style="margin-right: 6px;"
 										>
 										<?php echo esc_html($next_action); ?>
@@ -1968,6 +1976,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="saved-only-if-needed"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											data-import-id="<?php echo esc_attr($last_import_report['import_id']); ?>"
 											style="margin-right: 6px;"
 										>
 										<?php echo esc_html($next_action); ?>
@@ -2035,7 +2044,8 @@ function wpzm_render_admin_page() {
 				checklistCheckboxes.forEach(function (checkbox) {
 					var checklistGroup = checkbox.getAttribute('data-checklist-group');
 					var checklistIndex = checkbox.getAttribute('data-checklist-index');
-					var storageKey = 'wpzm_checklist_' + checklistGroup + '_' + checklistIndex;
+					var importId = checkbox.getAttribute('data-import-id') || 'default';
+					var storageKey = 'wpzm_checklist_' + importId + '_' + checklistGroup + '_' + checklistIndex;
 
 					if (localStorage.getItem(storageKey) === '1') {
 						checkbox.checked = true;
@@ -2051,15 +2061,7 @@ function wpzm_render_admin_page() {
 				});
 				clearButtons.forEach(function (button) {
 					button.addEventListener('click', function () {
-						var reportBox = button.closest('.notice');
-
-						if (!reportBox) {
-							return;
-						}
-
-						var reportCheckboxes = reportBox.querySelectorAll('.wpzm-checklist-checkbox');
-
-						reportCheckboxes.forEach(function (checkbox) {
+						checklistCheckboxes.forEach(function (checkbox) {
 							var checklistGroup = checkbox.getAttribute('data-checklist-group');
 							var checklistIndex = checkbox.getAttribute('data-checklist-index');
 							var storageKey = 'wpzm_checklist_' + checklistGroup + '_' + checklistIndex;
