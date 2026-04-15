@@ -698,6 +698,9 @@ function wpzm_handle_import_action() {
 	// whether plugins were restored cleanly, with issues, or skipped.
 	$plugin_restoration_status = 'not_started';
 
+	// Track a simple top-level health status for the import report UI.
+	$import_health_status = 'healthy';
+
 	// Create a unique ID for this import run so checklist progress can be
 	// stored separately for each report instead of leaking across imports.
 	$import_id = time();
@@ -1367,6 +1370,25 @@ function wpzm_handle_import_action() {
 	if ($plugin_restoration_status === 'not_started') {
 		$import_warnings[] = 'Plugin restoration status was never finalized during import.';
 	}
+
+	// Derive a simple top-level import health state from the outcomes that matter most.
+	if (
+		$uploads_count_comparison_status === 'lower' ||
+		$url_replacement_status === 'not_started' ||
+		$plugin_restoration_status === 'not_started'
+	) {
+		$import_health_status = 'attention_needed';
+	} elseif (
+		!empty($import_warnings) ||
+		!empty($plugin_activation_issues) ||
+		$url_replacement_status === 'skipped' ||
+		$plugin_restoration_status === 'completed_with_issues' ||
+		$plugin_restoration_status === 'skipped'
+	) {
+		$import_health_status = 'needs_review';
+	} else {
+		$import_health_status = 'healthy';
+	}
 	
 	wp_cache_flush();
 
@@ -1381,6 +1403,7 @@ function wpzm_handle_import_action() {
 		'url_replacement_status'          	=> $url_replacement_status,
 		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
 		'plugin_restoration_status'      	=> $plugin_restoration_status,
+		'import_health_status'             	=> $import_health_status,
 		'message'         					=> $summary_message,
 		'warnings'        					=> $import_warnings,
 		'plugin_activation_issues'			=> $plugin_activation_issues,
@@ -1401,6 +1424,7 @@ function wpzm_handle_import_action() {
 		'url_replacement_status'          	=> $url_replacement_status,
 		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
 		'plugin_restoration_status'       	=> $plugin_restoration_status,
+		'import_health_status'             	=> $import_health_status,
 		'message'      						=> $summary_message,
 		'warnings'     						=> $import_warnings,
 		'plugin_activation_issues' 			=> $plugin_activation_issues,
@@ -1691,6 +1715,40 @@ function wpzm_format_status_label($status) {
 	return ucwords(str_replace('_', ' ', $status));
 }
 
+// Convert the top-level import health value into a human-readable label.
+function wpzm_format_import_health_label($status) {
+
+	$health_labels = array(
+		'healthy' => 'Healthy',
+		'needs_review' => 'Needs review',
+		'attention_needed' => 'Attention needed',
+	);
+
+	if (isset($health_labels[$status])) {
+		return $health_labels[$status];
+	}
+
+	return ucwords(str_replace('_', ' ', $status));
+}
+
+// Return a simple inline style for the top-level import health badge.
+function wpzm_get_import_health_badge_style($status) {
+
+	switch ($status) {
+		case 'healthy':
+			return 'display:inline-block; padding:3px 10px; border-radius:14px; background:#d1e7dd; color:#0f5132; font-weight:600;';
+
+		case 'needs_review':
+			return 'display:inline-block; padding:3px 10px; border-radius:14px; background:#fff3cd; color:#664d03; font-weight:600;';
+
+		case 'attention_needed':
+			return 'display:inline-block; padding:3px 10px; border-radius:14px; background:#f8d7da; color:#842029; font-weight:600;';
+
+		default:
+			return 'display:inline-block; padding:3px 10px; border-radius:14px; background:#e9ecef; color:#495057; font-weight:600;';
+	}
+}
+
 function wpzm_render_admin_page() {
 	$export_result = wpzm_handle_export_action();
 	$import_result = wpzm_handle_import_action();
@@ -1736,6 +1794,17 @@ function wpzm_render_admin_page() {
 					<p><strong>Theme:</strong> <?php echo esc_html($import_result['theme_name']); ?></p>
 				<?php endif; ?>
 				<p><?php echo esc_html($import_result['message']); ?></p>
+
+				<?php if (!empty($import_result['import_health_status'])) : ?>
+					<div style="padding: 10px 12px; margin: 12px 0; background: #fff; border-left: 4px solid #72aee6;">
+						<p><strong>Import Health</strong></p>
+						<p>
+							<span style="<?php echo esc_attr(wpzm_get_import_health_badge_style($import_result['import_health_status'])); ?>">
+								<?php echo esc_html(wpzm_format_import_health_label($import_result['import_health_status'])); ?>
+							</span>
+						</p>
+					</div>
+				<?php endif; ?>
 
 						<?php // Show key outcome statuses for the current import. ?>
 						<?php if (
@@ -1914,6 +1983,17 @@ function wpzm_render_admin_page() {
 				<?php endif; ?>
 
 				<p><?php echo esc_html($last_import_report['message']); ?></p>
+
+				<?php if (!empty($last_import_report['import_health_status'])) : ?>
+					<div style="padding: 10px 12px; margin: 12px 0; background: #fff; border-left: 4px solid #72aee6;">
+						<p><strong>Import Health</strong></p>
+						<p>
+							<span style="<?php echo esc_attr(wpzm_get_import_health_badge_style($last_import_report['import_health_status'])); ?>">
+								<?php echo esc_html(wpzm_format_import_health_label($last_import_report['import_health_status'])); ?>
+							</span>
+						</p>
+					</div>
+				<?php endif; ?>
 
 				<?php if (!empty($last_import_report['plugin_activation_issues']) && is_array($last_import_report['plugin_activation_issues'])) : ?>
 					<p><strong>Plugin Activation Issues</strong></p>
