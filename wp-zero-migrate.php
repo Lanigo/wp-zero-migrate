@@ -698,6 +698,8 @@ function wpzm_handle_import_action() {
 	// whether plugins were restored cleanly, with issues, or skipped.
 	$plugin_restoration_status = 'not_started';
 
+	// Create a unique ID for this import run so checklist progress can be
+	// stored separately for each report instead of leaking across imports.
 	$import_id = time();
 
 	// Create a timestamped import working directory.
@@ -1819,6 +1821,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="live-always-check"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											<?php // Attach the current import ID so checklist progress is scoped to this report only. ?>
 											data-import-id="<?php echo esc_attr($import_id); ?>"
 											style="margin-right: 6px;"
 										>
@@ -1840,6 +1843,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="live-only-if-needed"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											<?php // Attach the current import ID so checklist progress is scoped to this report only. ?>
 											data-import-id="<?php echo esc_attr($import_id); ?>"
 											style="margin-right: 6px;"
 										>
@@ -1955,6 +1959,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="saved-always-check"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											<?php // Reuse the saved import ID so this report restores its own checklist progress. ?>
 											data-import-id="<?php echo esc_attr($last_import_report['import_id']); ?>"
 											style="margin-right: 6px;"
 										>
@@ -1976,6 +1981,7 @@ function wpzm_render_admin_page() {
 											class="wpzm-checklist-checkbox"
 											data-checklist-group="saved-only-if-needed"
 											data-checklist-index="<?php echo esc_attr($index); ?>"
+											<?php // Reuse the saved import ID so this report restores its own checklist progress. ?>
 											data-import-id="<?php echo esc_attr($last_import_report['import_id']); ?>"
 											style="margin-right: 6px;"
 										>
@@ -2044,6 +2050,8 @@ function wpzm_render_admin_page() {
 				checklistCheckboxes.forEach(function (checkbox) {
 					var checklistGroup = checkbox.getAttribute('data-checklist-group');
 					var checklistIndex = checkbox.getAttribute('data-checklist-index');
+					// Scope checklist storage to a specific import so one migration report does
+					// not overwrite the checklist progress of another.
 					var importId = checkbox.getAttribute('data-import-id') || 'default';
 					var storageKey = 'wpzm_checklist_' + importId + '_' + checklistGroup + '_' + checklistIndex;
 
