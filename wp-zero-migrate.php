@@ -1391,6 +1391,11 @@ function wpzm_handle_import_action() {
 		if ($url_replacement_status === 'not_started') {
 			$import_health_reasons[] = 'URL replacement status was never finalized.';
 		}
+
+		// Record a clear explanation when plugin restoration status was never finalized.
+		if ($plugin_restoration_status === 'not_started') {
+			$import_health_reasons[] = 'Plugin restoration status was never finalized.';
+		}
 	} elseif (
 		!empty($import_warnings) ||
 		!empty($plugin_activation_issues) ||
