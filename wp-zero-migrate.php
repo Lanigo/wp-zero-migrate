@@ -2017,6 +2017,15 @@ function wpzm_render_admin_page() {
 								<?php echo esc_html(wpzm_format_import_health_label($last_import_report['import_health_status'])); ?>
 							</span>
 						</p>
+
+						<?php // Show saved human-readable health reasons so the saved report explains its own status. ?>
+						<?php if (!empty($last_import_report['import_health_reasons']) && is_array($last_import_report['import_health_reasons'])) : ?>
+							<ul style="list-style: disc; margin: 8px 0 0 18px;">
+								<?php foreach ($last_import_report['import_health_reasons'] as $health_reason) : ?>
+									<li><?php echo esc_html($health_reason); ?></li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
 					</div>
 				<?php endif; ?>
 
