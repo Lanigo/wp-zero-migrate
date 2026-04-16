@@ -1402,7 +1402,7 @@ function wpzm_handle_import_action() {
 
 	// Save the latest successful import report with a little context so it is
 	// easier to understand later after reloads or repeated test runs.
-	$last_import_report = array(
+		$last_import_report = array(
 		'import_id' 						=> $import_id,
 		'timestamp'       					=> current_time('mysql'),
 		'site_name'       					=> $site_name,
@@ -1412,6 +1412,10 @@ function wpzm_handle_import_action() {
 		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
 		'plugin_restoration_status'      	=> $plugin_restoration_status,
 		'import_health_status'             	=> $import_health_status,
+
+		// Save human-readable health reasons so the saved report can explain the status.
+		'import_health_reasons'             => $import_health_reasons,
+
 		'message'         					=> $summary_message,
 		'warnings'        					=> $import_warnings,
 		'plugin_activation_issues'			=> $plugin_activation_issues,
@@ -1422,7 +1426,7 @@ function wpzm_handle_import_action() {
 	update_option('wpzm_last_import_report', $last_import_report);
 
 	// Return the main summary plus structured warnings and steps for clearer admin UI output.
-	return array(
+		return array(
 		'action'       						=> 'import',
 		'type'         						=> 'success',
 		'timestamp'       					=> current_time('mysql'),
@@ -1433,6 +1437,10 @@ function wpzm_handle_import_action() {
 		'uploads_count_comparison_status' 	=> $uploads_count_comparison_status,
 		'plugin_restoration_status'       	=> $plugin_restoration_status,
 		'import_health_status'             	=> $import_health_status,
+
+		// Return human-readable health reasons so the live result can explain the status.
+		'import_health_reasons'             => $import_health_reasons,
+
 		'message'      						=> $summary_message,
 		'warnings'     						=> $import_warnings,
 		'plugin_activation_issues' 			=> $plugin_activation_issues,
