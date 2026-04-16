@@ -1390,9 +1390,14 @@ function wpzm_handle_import_action() {
 	) {
 		$import_health_status = 'needs_review';
 
-		// Record one clear explanation so the health badge is not just a vague status.
+		// Record a clear explanation when plugin activation did not fully succeed.
 		if (!empty($plugin_activation_issues)) {
 			$import_health_reasons[] = 'Some plugins could not be activated.';
+		}
+
+		// Record a clear explanation when automatic URL replacement did not run.
+		if ($url_replacement_status === 'skipped') {
+			$import_health_reasons[] = 'Automatic URL replacement did not run.';
 		}
 	} else {
 		$import_health_status = 'healthy';
