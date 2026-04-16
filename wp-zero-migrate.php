@@ -1381,6 +1381,17 @@ function wpzm_handle_import_action() {
 		$plugin_restoration_status === 'not_started'
 	) {
 		$import_health_status = 'attention_needed';
+		if (
+		$uploads_count_comparison_status === 'lower' ||
+		$url_replacement_status === 'not_started' ||
+		$plugin_restoration_status === 'not_started'
+	) {
+		$import_health_status = 'attention_needed';
+
+		// Record a clear explanation when fewer uploads were found than expected.
+		if ($uploads_count_comparison_status === 'lower') {
+			$import_health_reasons[] = 'Destination uploads count was lower than the manifest count.';
+		}
 	} elseif (
 		!empty($import_warnings) ||
 		!empty($plugin_activation_issues) ||
