@@ -1424,6 +1424,11 @@ function wpzm_handle_import_action() {
 		if ($plugin_restoration_status === 'skipped') {
 			$import_health_reasons[] = 'Plugin restoration was skipped.';
 		}
+
+		// Add a fallback explanation when review is needed but no specific reason was added yet.
+		if (empty($import_health_reasons) && !empty($import_warnings)) {
+			$import_health_reasons[] = 'Import completed with warnings that should be reviewed.';
+		}
 	} else {
 		$import_health_status = 'healthy';
 	}
