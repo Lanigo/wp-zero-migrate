@@ -1819,46 +1819,55 @@ function wpzm_render_admin_page() {
 								<?php echo esc_html(wpzm_format_import_health_label($import_result['import_health_status'])); ?>
 							</span>
 						</p>
+
+						<?php // Show human-readable health reasons when the import is not fully healthy. ?>
+						<?php if (!empty($import_result['import_health_reasons']) && is_array($import_result['import_health_reasons'])) : ?>
+							<ul style="list-style: disc; margin: 8px 0 0 18px;">
+								<?php foreach ($import_result['import_health_reasons'] as $health_reason) : ?>
+									<li><?php echo esc_html($health_reason); ?></li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
 					</div>
 				<?php endif; ?>
 
-						<?php // Show key outcome statuses for the current import. ?>
-						<?php if (
-							!empty($import_result['url_replacement_status']) ||
-							!empty($import_result['uploads_count_comparison_status']) ||
-							!empty($import_result['plugin_restoration_status'])
-						) : ?>
-							<div style="padding: 10px 12px; margin: 12px 0; background: #fff; border-left: 4px solid #72aee6;">
-								<p><strong>Outcome Summary</strong></p>
+				<?php // Show key outcome statuses for the current import. ?>
+				<?php if (
+					!empty($import_result['url_replacement_status']) ||
+					!empty($import_result['uploads_count_comparison_status']) ||
+					!empty($import_result['plugin_restoration_status'])
+				) : ?>
+					<div style="padding: 10px 12px; margin: 12px 0; background: #fff; border-left: 4px solid #72aee6;">
+						<p><strong>Outcome Summary</strong></p>
 
-								<?php if (!empty($import_result['url_replacement_status'])) : ?>
-									<p>
-										<strong>URL Replacement:</strong>
-										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['url_replacement_status'])); ?>">
-											<?php echo esc_html(wpzm_format_status_label($import_result['url_replacement_status'])); ?>
-										</span>
-									</p>
-								<?php endif; ?>
-
-								<?php if (!empty($import_result['uploads_count_comparison_status'])) : ?>
-									<p>
-										<strong>Uploads Comparison:</strong>
-										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['uploads_count_comparison_status'])); ?>">
-											<?php echo esc_html(wpzm_format_status_label($import_result['uploads_count_comparison_status'])); ?>
-										</span>
-									</p>
-								<?php endif; ?>
-
-								<?php if (!empty($import_result['plugin_restoration_status'])) : ?>
-									<p>
-										<strong>Plugin Restoration:</strong>
-										<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['plugin_restoration_status'])); ?>">
-											<?php echo esc_html(wpzm_format_status_label($import_result['plugin_restoration_status'])); ?>
-										</span>
-									</p>
-								<?php endif; ?>
-							</div>
+						<?php if (!empty($import_result['url_replacement_status'])) : ?>
+							<p>
+								<strong>URL Replacement:</strong>
+								<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['url_replacement_status'])); ?>">
+									<?php echo esc_html(wpzm_format_status_label($import_result['url_replacement_status'])); ?>
+								</span>
+							</p>
 						<?php endif; ?>
+
+						<?php if (!empty($import_result['uploads_count_comparison_status'])) : ?>
+							<p>
+								<strong>Uploads Comparison:</strong>
+								<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['uploads_count_comparison_status'])); ?>">
+									<?php echo esc_html(wpzm_format_status_label($import_result['uploads_count_comparison_status'])); ?>
+								</span>
+							</p>
+						<?php endif; ?>
+
+						<?php if (!empty($import_result['plugin_restoration_status'])) : ?>
+							<p>
+								<strong>Plugin Restoration:</strong>
+								<span style="<?php echo esc_attr(wpzm_get_status_badge_style($import_result['plugin_restoration_status'])); ?>">
+									<?php echo esc_html(wpzm_format_status_label($import_result['plugin_restoration_status'])); ?>
+								</span>
+							</p>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 
 				<?php if (!empty($import_result['warnings']) && is_array($import_result['warnings'])) : ?>
 					<p><strong>Warnings</strong></p>
