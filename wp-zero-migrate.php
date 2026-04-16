@@ -1400,6 +1400,11 @@ function wpzm_handle_import_action() {
 			$import_health_reasons[] = 'Automatic URL replacement did not run.';
 		}
 
+		// Record a clear explanation when plugin restoration completed with issues.
+		if ($plugin_restoration_status === 'completed_with_issues') {
+			$import_health_reasons[] = 'Plugin restoration completed with issues.';
+		}
+
 		// Record a clear explanation when plugin restoration was skipped.
 		if ($plugin_restoration_status === 'skipped') {
 			$import_health_reasons[] = 'Plugin restoration was skipped.';
