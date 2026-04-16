@@ -1399,6 +1399,11 @@ function wpzm_handle_import_action() {
 		if ($url_replacement_status === 'skipped') {
 			$import_health_reasons[] = 'Automatic URL replacement did not run.';
 		}
+
+		// Record a clear explanation when plugin restoration was skipped.
+		if ($plugin_restoration_status === 'skipped') {
+			$import_health_reasons[] = 'Plugin restoration was skipped.';
+		}
 	} else {
 		$import_health_status = 'healthy';
 	}
