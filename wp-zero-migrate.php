@@ -447,8 +447,10 @@ $tables_to_export = array(
     );
 }
 
-// Convert a PHP value into a basic SQL-safe literal.
+// Convert a PHP value into a SQL-safe literal for export statements.
 function wpzm_format_sql_value($value) {
+
+	global $wpdb;
 
 	if (is_null($value)) {
 		return 'NULL';
@@ -458,7 +460,9 @@ function wpzm_format_sql_value($value) {
 		return (string) $value;
 	}
 
-	return "'" . addslashes((string) $value) . "'";
+	// Escape string values using the active database connection so exported SQL
+	// is safer and more portable than a simple addslashes() approach.
+	return "'" . $wpdb->_real_escape((string) $value) . "'";
 }
 
 // Recursively copy a directory and its contents.
