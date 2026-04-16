@@ -1432,6 +1432,11 @@ function wpzm_handle_import_action() {
 	} else {
 		$import_health_status = 'healthy';
 	}
+
+	// Remove duplicate health reasons to keep the report clean and readable.
+	if (!empty($import_health_reasons)) {
+		$import_health_reasons = array_values(array_unique($import_health_reasons));
+	}
 	
 	wp_cache_flush();
 
