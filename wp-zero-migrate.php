@@ -1880,6 +1880,10 @@ function wpzm_render_admin_page() {
 		<p>Your migration plugin is alive.</p>
 		<p><strong>Plugin build marker:</strong> CHECKPOINT-TEST-1</p>
 
+		<?php // Temporary request diagnostics for silent import submissions. ?>
+		<p><strong>Import submit detected:</strong> <?php echo isset($_POST['wpzm_run_import']) ? 'Yes' : 'No'; ?></p>
+		<p><strong>Import file detected:</strong> <?php echo !empty($_FILES['wpzm_import_zip']['name']) ? 'Yes' : 'No'; ?></p>
+
 		<?php if (!empty($export_result)) : ?>
 			<div class="notice notice-<?php echo esc_attr($export_result['type']); ?>">
 				<p><?php echo esc_html($export_result['message']); ?></p>
