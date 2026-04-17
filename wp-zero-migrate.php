@@ -677,6 +677,9 @@ function wpzm_handle_import_action() {
 
 	$original_destination_site_url = home_url();
 
+	// Save a temporary checkpoint so silent failures can be traced after the request dies.
+	update_option('wpzm_import_debug_checkpoint', 'Import request started');
+
 	// Prevent WP-Cron from spawning during this import request.
 	// This avoids shutdown-time database noise while the import is still using the DB connection heavily.
 	remove_action('shutdown', 'wp_ob_end_flush_all', 1);
@@ -787,6 +790,10 @@ function wpzm_handle_import_action() {
 	}
 
 	$zip_extracted = $zip->extractTo($extracted_path);
+
+	// Record that the uploaded package was extracted successfully.
+	update_option('wpzm_import_debug_checkpoint', 'Zip extracted');
+
 	$zip->close();
 
 	if ($zip_extracted === false) {
@@ -863,6 +870,9 @@ function wpzm_handle_import_action() {
 	}
 
 	$manifest_data = json_decode($manifest_content, true);
+
+	// Record that the manifest file was read and decoded.
+	update_option('wpzm_import_debug_checkpoint', 'Manifest decoded');
 
 	if ($manifest_data === null) {
 		return array(
@@ -968,6 +978,9 @@ function wpzm_handle_import_action() {
 
 	$uploads_imported = wpzm_copy_directory($uploads_dir, $destination_uploads_dir);
 
+	// Record that uploads import has started.
+	update_option('wpzm_import_debug_checkpoint', 'Uploads copied');
+
 	if ($uploads_imported === false) {
 		return array(
 			'action'  => 'import',
@@ -1027,6 +1040,9 @@ function wpzm_handle_import_action() {
 	}
 
 	$themes_imported = wpzm_copy_directory($themes_dir, $destination_themes_dir);
+
+	// Record that theme files import has completed.
+	update_option('wpzm_import_debug_checkpoint', 'Themes copied');
 
 	if ($themes_imported === false) {
 		return array(
@@ -1091,9 +1107,12 @@ function wpzm_handle_import_action() {
 		$import_steps[] = 'Theme restoration skipped';
 	}
 
-		// Copy packaged plugins into the destination plugins directory, but protect
+	// Copy packaged plugins into the destination plugins directory, but protect
 	// WP Zero Migrate itself from being overwritten by an older bundled copy.
 	$plugin_directories = scandir($plugins_dir);
+
+	// Record that theme restoration finished and plugin import is about to begin.
+	update_option('wpzm_import_debug_checkpoint', 'Preparing plugin import');
 
 	if ($plugin_directories === false) {
 		return array(
@@ -1138,6 +1157,12 @@ function wpzm_handle_import_action() {
 
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
+	// Record that file copying finished and SQL parsing is about to begin.
+	update_option('wpzm_import_debug_checkpoint', 'Preparing SQL parse');
+
+	// Record that the SQL file was parsed into statements.
+	update_option('wpzm_import_debug_checkpoint', 'SQL parsed');
+
 	if ($sql_statements === false) {
 		return array(
 			'action'  => 'import',
@@ -1161,6 +1186,9 @@ function wpzm_handle_import_action() {
 	}
 
 	$executed_sql_count = 0;
+
+	// Record that SQL execution is about to begin.
+	update_option('wpzm_import_debug_checkpoint', 'Starting SQL execution');
 
 	// Execute each parsed SQL statement in order, remapping table prefixes when needed.
 	foreach ($sql_statements as $index => $sql_statement) {
@@ -1187,6 +1215,9 @@ function wpzm_handle_import_action() {
 		}
 
 		$executed_sql_count++;
+
+		// Persist the current SQL statement count so silent failures show how far import got.
+		update_option('wpzm_import_debug_checkpoint', 'Executed SQL statement #' . $executed_sql_count);
 	}
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
@@ -1446,6 +1477,9 @@ function wpzm_handle_import_action() {
 	if (!empty($import_health_reasons)) {
 		$import_health_reasons = array_values(array_unique($import_health_reasons));
 	}
+
+	// Record that the import reached the end of the main workflow successfully.
+	update_option('wpzm_import_debug_checkpoint', 'Import completed main workflow');
 	
 	wp_cache_flush();
 
