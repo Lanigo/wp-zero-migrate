@@ -646,10 +646,11 @@ function wpzm_create_zip_archive($zip_file, $export_path, $files_to_include) {
 // Handle the import form submission and return a result array.
 function wpzm_handle_import_action() {
 
-	// If the import button was not clicked, return no result.
+	// Allow import to run either from upload OR from a predefined server path (temporary test mode).
 	if (!isset($_POST['wpzm_run_import'])) {
 		return null;
 	}
+
 
 	// Verify the nonce before processing the import submission.
 	if (
@@ -2240,7 +2241,22 @@ function wpzm_render_admin_page() {
 			<?php wp_nonce_field('wpzm_import_package_action', 'wpzm_import_nonce'); ?>
 			<p>
 				<input type="file" name="wpzm_import_zip" accept=".zip">
+
+				<p style="margin: 12px 0 6px;">
+					<strong>Or import from server path</strong>
+				</p>
+				<input
+					type="text"
+					name="wpzm_import_server_path"
+					value=""
+					placeholder="<?php echo esc_attr(WP_CONTENT_DIR . '/wpzm-imports/export-package.zip'); ?>"
+					style="width: 100%; max-width: 700px;"
+				>
+				<p class="description" style="margin-top: 6px;">
+					Leave both blank to do nothing. Use either an uploaded zip or a full server path to a zip file.
+				</p>
 			</p>
+			
 			<p>
 				<button type="submit" name="wpzm_run_import" class="button">
 					Import Package
