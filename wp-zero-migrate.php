@@ -664,15 +664,23 @@ function wpzm_handle_import_action() {
 		);
 	}
 
-	// Check whether a file was uploaded.
-	if (
-		!isset($_FILES['wpzm_import_zip']) ||
-		empty($_FILES['wpzm_import_zip']['name'])
-	) {
+	// Allow the import to use either an uploaded zip file or a server path.
+	$import_server_path = isset($_POST['wpzm_import_server_path'])
+		? trim(wp_unslash($_POST['wpzm_import_server_path']))
+		: '';
+
+	$has_uploaded_zip = (
+		isset($_FILES['wpzm_import_zip']) &&
+		!empty($_FILES['wpzm_import_zip']['name'])
+	);
+
+	$has_server_zip_path = ($import_server_path !== '');
+
+	if (!$has_uploaded_zip && !$has_server_zip_path) {
 		return array(
 			'action'  => 'import',
 			'type'    => 'error',
-			'message' => 'Please choose a zip file to import.',
+			'message' => 'Please choose a zip file or enter a server path to a zip file.',
 		);
 	}
 
@@ -2256,7 +2264,7 @@ function wpzm_render_admin_page() {
 					Leave both blank to do nothing. Use either an uploaded zip or a full server path to a zip file.
 				</p>
 			</p>
-			
+
 			<p>
 				<button type="submit" name="wpzm_run_import" class="button">
 					Import Package
