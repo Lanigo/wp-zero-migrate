@@ -677,6 +677,11 @@ function wpzm_handle_import_action() {
 
 	$original_destination_site_url = home_url();
 
+	// Prevent WP-Cron from spawning during this import request.
+	// This avoids shutdown-time database noise while the import is still using the DB connection heavily.
+	remove_action('shutdown', 'wp_ob_end_flush_all', 1);
+	add_filter('wp_doing_cron', '__return_false');
+
 	// Collect non-fatal issues that should be shown in the final import report.
 	$import_warnings = array();
 
