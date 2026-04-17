@@ -1632,9 +1632,31 @@ function wpzm_parse_sql_statements($sql_file_path) {
 		}
 	}
 
-	// If any non-whitespace content remains, the SQL file was not parsed cleanly.
-	if (trim($current_statement) !== '') {
-		return false;
+	// Allow trailing whitespace or trailing SQL comment lines after the final statement.
+	$remaining_sql = trim($current_statement);
+
+	if ($remaining_sql !== '') {
+		$remaining_lines = preg_split('/\R/', $remaining_sql);
+		$has_real_sql_leftover = false;
+
+		foreach ($remaining_lines as $remaining_line) {
+			$trimmed_remaining_line = trim($remaining_line);
+
+			if ($trimmed_remaining_line === '') {
+				continue;
+			}
+
+			if (strpos($trimmed_remaining_line, '--') === 0) {
+				continue;
+			}
+
+			$has_real_sql_leftover = true;
+			break;
+		}
+
+		if ($has_real_sql_leftover) {
+			return false;
+		}
 	}
 
 	return $statements;
