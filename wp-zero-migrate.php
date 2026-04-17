@@ -1499,45 +1499,57 @@ function wpzm_handle_import_action() {
 }
 
 // Parse a SQL file into executable statements.
+// Parse a SQL file into executable statements.
 function wpzm_parse_sql_statements($sql_file_path) {
 
 	if (!file_exists($sql_file_path)) {
 		return false;
 	}
 
-	$lines = file($sql_file_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	$sql_content = file_get_contents($sql_file_path);
 
-	if ($lines === false) {
+	if ($sql_content === false) {
 		return false;
 	}
 
 	$statements = array();
 	$current_statement = '';
+	$length = strlen($sql_content);
+	$in_single_quote = false;
+	$in_double_quote = false;
 
-	foreach ($lines as $line) {
+	for ($i = 0; $i < $length; $i++) {
+		$character = $sql_content[$i];
+		$previous_character = ($i > 0) ? $sql_content[$i - 1] : '';
 
-		$trimmed_line = trim($line);
+		$current_statement .= $character;
 
-		// Skip SQL comments.
-		if (strpos($trimmed_line, '--') === 0) {
+		// Toggle single-quoted string state when the quote is not escaped.
+		if ($character === "'" && !$in_double_quote && $previous_character !== '\\') {
+			$in_single_quote = !$in_single_quote;
 			continue;
 		}
 
-		// Skip empty lines.
-		if ($trimmed_line === '') {
+		// Toggle double-quoted string state when the quote is not escaped.
+		if ($character === '"' && !$in_single_quote && $previous_character !== '\\') {
+			$in_double_quote = !$in_double_quote;
 			continue;
 		}
 
-		$current_statement .= $line . "\n";
+		// End the statement only when a semicolon appears outside quoted strings.
+		if ($character === ';' && !$in_single_quote && !$in_double_quote) {
+			$trimmed_statement = trim($current_statement);
 
-		// If the line ends with a semicolon, the statement is complete.
-		if (substr(rtrim($trimmed_line), -1) === ';') {
-			$statements[] = trim($current_statement);
+			// Skip standalone SQL comment lines that may have been collected.
+			if ($trimmed_statement !== '' && strpos($trimmed_statement, '--') !== 0) {
+				$statements[] = $trimmed_statement;
+			}
+
 			$current_statement = '';
 		}
 	}
 
-	// If anything is left over, treat that as a parsing failure.
+	// If any non-whitespace content remains, the SQL file was not parsed cleanly.
 	if (trim($current_statement) !== '') {
 		return false;
 	}
