@@ -753,16 +753,21 @@ function wpzm_handle_import_action() {
 
 	$uploaded_zip_path = $import_path . '/import-package.zip';
 
-	$upload_moved = move_uploaded_file(
-		$_FILES['wpzm_import_zip']['tmp_name'],
-		$uploaded_zip_path
-	);
+	// Copy the chosen zip source into the import working directory.
+	if ($has_uploaded_zip) {
+		$zip_stored = move_uploaded_file(
+			$_FILES['wpzm_import_zip']['tmp_name'],
+			$uploaded_zip_path
+		);
+	} else {
+		$zip_stored = copy($import_server_path, $uploaded_zip_path);
+	}
 
-	if ($upload_moved === false) {
+	if ($zip_stored === false) {
 		return array(
 			'action'  => 'import',
 			'type'    => 'error',
-			'message' => 'Failed to store uploaded zip file.',
+			'message' => 'Failed to store the import zip file.',
 		);
 	}
 
