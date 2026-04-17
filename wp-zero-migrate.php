@@ -684,6 +684,41 @@ function wpzm_handle_import_action() {
 		);
 	}
 
+		// Validate the server path before trying to copy from it.
+	if ($has_server_zip_path) {
+		if (!file_exists($import_server_path)) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'The server zip path does not exist.',
+			);
+		}
+
+		if (!is_file($import_server_path)) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'The server zip path is not a file.',
+			);
+		}
+
+		if (!is_readable($import_server_path)) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'The server zip file is not readable.',
+			);
+		}
+
+		if (strtolower(pathinfo($import_server_path, PATHINFO_EXTENSION)) !== 'zip') {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'The server path must point to a .zip file.',
+			);
+		}
+	}
+
 	$original_destination_site_url = home_url();
 
 	// Save a temporary checkpoint so silent failures can be traced after the request dies.
