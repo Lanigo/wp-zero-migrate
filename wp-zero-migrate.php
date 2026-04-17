@@ -1704,6 +1704,33 @@ function wpzm_replace_url_in_meta_table($table_name, $id_column, $value_column, 
 
 	global $wpdb;
 
+	// Remove the destination copies of the exported core tables before running
+	// the imported CREATE TABLE statements from database.sql.
+	$tables_to_replace = array(
+		$wpdb->prefix . 'options',
+		$wpdb->prefix . 'posts',
+		$wpdb->prefix . 'postmeta',
+		$wpdb->prefix . 'users',
+		$wpdb->prefix . 'usermeta',
+		$wpdb->prefix . 'terms',
+		$wpdb->prefix . 'term_taxonomy',
+		$wpdb->prefix . 'term_relationships',
+		$wpdb->prefix . 'comments',
+		$wpdb->prefix . 'commentmeta',
+	);
+
+	foreach ($tables_to_replace as $table_to_replace) {
+		$drop_result = $wpdb->query("DROP TABLE IF EXISTS `$table_to_replace`");
+
+		if ($drop_result === false) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Failed to reset destination table before SQL import: ' . $table_to_replace,
+			);
+		}
+	}
+
 	$rows = $wpdb->get_results(
 		"SELECT `$id_column`, `$value_column` FROM `$table_name`",
 		ARRAY_A
