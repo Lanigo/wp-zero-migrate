@@ -1273,8 +1273,34 @@ function wpzm_handle_import_action() {
 		// Keep the destination site URL anchored during SQL import so a partial
 		// options-table import does not leave the site pointing at the source URL.
 		if (strpos($sql_statement, '`' . $destination_database_prefix . 'options`') !== false) {
-			update_option('siteurl', $original_destination_site_url);
-			update_option('home', $original_destination_site_url);
+			$options_table_name = $destination_database_prefix . 'options';
+
+			// Force the destination URL directly in the imported options table.
+			$siteurl_restore_result = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE `$options_table_name`
+					SET option_value = %s
+					WHERE option_name = 'siteurl'",
+					$original_destination_site_url
+				)
+			);
+
+			$home_restore_result = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE `$options_table_name`
+					SET option_value = %s
+					WHERE option_name = 'home'",
+					$original_destination_site_url
+				)
+			);
+
+			if ($siteurl_restore_result === false || $home_restore_result === false) {
+				return array(
+					'action'  => 'import',
+					'type'    => 'error',
+					'message' => 'SQL import ran, but failed to keep the destination site URL anchored.',
+				);
+			}
 		}
 
 		// Persist the current SQL statement count so silent failures show how far import got.
