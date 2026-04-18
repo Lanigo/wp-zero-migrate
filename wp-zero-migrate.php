@@ -1270,12 +1270,15 @@ function wpzm_handle_import_action() {
 
 		$		$executed_sql_count++;
 
-		// Keep the destination site URL anchored during SQL import so a partial
+				// Keep the destination site URL anchored during SQL import so a partial
 		// options-table import does not leave the site pointing at the source URL.
-		if (strpos($sql_statement, '`' . $destination_database_prefix . 'options`') !== false) {
+		$options_insert_prefix = 'INSERT INTO `' . $destination_database_prefix . 'options`';
+
+		if (strpos($sql_statement, $options_insert_prefix) === 0) {
 			$options_table_name = $destination_database_prefix . 'options';
 
-			// Force the destination URL directly in the imported options table.
+			// Force the destination URL directly in the imported options table,
+			// but only after an options INSERT has actually run.
 			$siteurl_restore_result = $wpdb->query(
 				$wpdb->prepare(
 					"UPDATE `$options_table_name`
