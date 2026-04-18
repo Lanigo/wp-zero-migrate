@@ -1340,6 +1340,60 @@ function wpzm_handle_import_action() {
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
+	// Remap prefix-based role keys after SQL import so WordPress can find
+	// the imported roles and user capabilities on the destination prefix.
+	if (
+		!empty($source_database_prefix) &&
+		!empty($destination_database_prefix) &&
+		$source_database_prefix !== $destination_database_prefix
+	) {
+		$role_option_renamed = $wpdb->update(
+			$wpdb->options,
+			array(
+				'option_name' => $destination_database_prefix . 'user_roles',
+			),
+			array(
+				'option_name' => $source_database_prefix . 'user_roles',
+			),
+			array('%s'),
+			array('%s')
+		);
+
+		if ($role_option_renamed === false) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Database import succeeded, but failed to remap the user roles option key.',
+			);
+		}
+
+		$usermeta_role_keys_renamed = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->usermeta}
+				SET meta_key = CASE
+					WHEN meta_key = %s THEN %s
+					WHEN meta_key = %s THEN %s
+					ELSE meta_key
+				END
+				WHERE meta_key IN (%s, %s)",
+				$source_database_prefix . 'capabilities',
+				$destination_database_prefix . 'capabilities',
+				$source_database_prefix . 'user_level',
+				$destination_database_prefix . 'user_level',
+				$source_database_prefix . 'capabilities',
+				$source_database_prefix . 'user_level'
+			)
+		);
+
+		if ($usermeta_role_keys_renamed === false) {
+			return array(
+				'action'  => 'import',
+				'type'    => 'error',
+				'message' => 'Database import succeeded, but failed to remap user capability meta keys.',
+			);
+		}
+	}
+
 	// After the database import, update the destination site URL and replace
 	// old source URLs across key WordPress tables and meta values.
 		if (!empty($source_site_url) && !empty($destination_site_url)) {
