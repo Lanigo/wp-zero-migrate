@@ -1253,6 +1253,11 @@ function wpzm_handle_import_action() {
 		$sql_result = $wpdb->query($sql_statement);
 
 		if ($sql_result === false) {
+			// Restore the destination URL settings before returning, so a partial
+			// SQL import does not leave the site pointing at the source site URL.
+			update_option('siteurl', $original_destination_site_url);
+			update_option('home', $original_destination_site_url);
+
 			// Keep the SQL preview short so the error message is useful without becoming unreadable.
 			$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
 
