@@ -1340,6 +1340,16 @@ function wpzm_handle_import_action() {
 
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
+	// Fail the import if no SQL statements were actually executed.
+	// A successful migration cannot leave the database unchanged.
+	if ($executed_sql_count === 0) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'Database import did not execute any SQL statements.',
+		);
+	}
+
 	// Remap prefix-based role keys after SQL import so WordPress can find
 	// the imported roles and user capabilities on the destination prefix.
 	if (
