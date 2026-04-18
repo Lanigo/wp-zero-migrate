@@ -1605,6 +1605,21 @@ function wpzm_parse_sql_statements($sql_file_path) {
 		$character = $sql_content[$i];
 		$previous_character = ($i > 0) ? $sql_content[$i - 1] : '';
 
+		// Skip full-line SQL comments before they get added to the current statement.
+		if (
+			!$in_single_quote &&
+			!$in_double_quote &&
+			$character === '-' &&
+			($i + 1) < $length &&
+			$sql_content[$i + 1] === '-' &&
+			($i === 0 || $sql_content[$i - 1] === "\n")
+		) {
+			while ($i < $length && $sql_content[$i] !== "\n") {
+				$i++;
+			}
+			continue;
+		}
+
 		$current_statement .= $character;
 
 		// Toggle single-quoted string state when the quote is not escaped.
