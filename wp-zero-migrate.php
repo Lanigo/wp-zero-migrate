@@ -1277,7 +1277,7 @@ function wpzm_handle_import_action() {
 			);
 		}
 
-		$		$executed_sql_count++;
+		$executed_sql_count++;
 
 				// Keep the destination site URL anchored during SQL import so a partial
 		// options-table import does not leave the site pointing at the source URL.
@@ -2593,7 +2593,12 @@ function wpzm_export_table_sql($table_name) {
 			$values[]  = wpzm_format_sql_value($value);
 		}
 
-		$sql_content .= "INSERT INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+		// Use REPLACE for options so duplicate option_name entries do not abort the import.
+		if ($table_name === $wpdb->prefix . 'options') {
+			$sql_content .= "REPLACE INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+		} else {
+			$sql_content .= "INSERT INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+		}
 	}
 
 	$sql_content .= "\n";
