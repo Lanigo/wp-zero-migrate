@@ -2597,7 +2597,8 @@ function wpzm_export_table_sql($table_name) {
 		if ($table_name === $wpdb->prefix . 'options') {
 			$sql_content .= "REPLACE INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
 		} else {
-			$sql_content .= "INSERT INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+			// Use INSERT IGNORE to prevent duplicate key errors from aborting the import.
+			$sql_content .= "INSERT IGNORE INTO `$table_name` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
 		}
 	}
 
