@@ -1206,6 +1206,15 @@ function wpzm_handle_import_action() {
 
 	$sql_statements = wpzm_parse_sql_statements($database_file);
 
+	// Fail early if the SQL parser did not produce any executable statements.
+	if (empty($sql_statements) || !is_array($sql_statements)) {
+		return array(
+			'action'  => 'import',
+			'type'    => 'error',
+			'message' => 'SQL parser returned no executable statements.',
+		);
+	}
+
 	// Record that file copying finished and SQL parsing is about to begin.
 	update_option('wpzm_import_debug_checkpoint', 'Preparing SQL parse');
 
@@ -1337,7 +1346,7 @@ function wpzm_handle_import_action() {
 			);
 		}
 	}
-
+	
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
 	// Fail the import if no SQL statements were actually executed.
