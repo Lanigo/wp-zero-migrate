@@ -1265,13 +1265,6 @@ function wpzm_handle_import_action() {
 
 		$executed_sql_count++;
 
-		// Keep the destination site URL anchored during SQL import so a partial
-		// options-table import does not leave the site pointing at the source URL.
-		if (strpos($sql_statement, '`' . $destination_database_prefix . 'options`') !== false) {
-			update_option('siteurl', $original_destination_site_url);
-			update_option('home', $original_destination_site_url);
-		}
-
 		// Persist the current SQL statement count so silent failures show how far import got.
 		update_option('wpzm_import_debug_checkpoint', 'Executed SQL statement #' . $executed_sql_count);
 	}
