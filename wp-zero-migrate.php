@@ -2429,14 +2429,14 @@ function wpzm_export_table_sql($table_name) {
 	// Add insert section header.
 	$sql_content .= "-- Inserting data for table: " . $table_name . "\n";
 
-	// Get table rows.
 	if ($table_name === $wpdb->prefix . 'options') {
 		$rows = $wpdb->get_results(
 			"SELECT * FROM `$table_name`
 			WHERE option_name NOT LIKE '\_transient\_%'
 			AND option_name NOT LIKE '\_site\_transient\_%'
 			AND option_name NOT LIKE '\_transient\_timeout\_%'
-			AND option_name NOT LIKE '\_site\_transient\_timeout\_%'",
+			AND option_name NOT LIKE '\_site\_transient\_timeout\_%'
+			AND option_name NOT IN ('siteurl', 'home')",
 			ARRAY_A
 		);
 	} else {
