@@ -1281,34 +1281,6 @@ function wpzm_handle_import_action() {
 		update_option('wpzm_import_debug_checkpoint', 'Executed SQL statement #' . $executed_sql_count);
 	}
 
-	// Remap prefix-based usermeta capability keys so imported users keep their roles
-	// when the destination site uses a different database prefix.
-	if (
-		!empty($source_database_prefix) &&
-		!empty($destination_database_prefix) &&
-		$source_database_prefix !== $destination_database_prefix
-	) {
-		$usermeta_prefix_keys_updated = $wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->usermeta}
-				SET meta_key = REPLACE(meta_key, %s, %s)
-				WHERE meta_key IN (%s, %s)",
-				$source_database_prefix,
-				$destination_database_prefix,
-				$source_database_prefix . 'capabilities',
-				$source_database_prefix . 'user_level'
-			)
-		);
-
-		if ($usermeta_prefix_keys_updated === false) {
-			return array(
-				'action'  => 'import',
-				'type'    => 'error',
-				'message' => 'Database import succeeded, but failed to remap user role meta keys.',
-			);
-		}
-	}
-
 	$summary_message .= ' SQL Statements Executed: ' . $executed_sql_count . '.';
 
 	// After the database import, update the destination site URL and replace
