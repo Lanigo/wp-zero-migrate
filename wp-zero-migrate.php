@@ -1971,7 +1971,6 @@ function wpzm_render_admin_page() {
 	<div class="wrap">
 		<h1>WP Zero Migrate</h1>
 		<p>Your migration plugin is alive.</p>
-		<p><strong>Plugin build marker:</strong> CHECKPOINT-TEST-1</p>
 
 		<?php if (!empty($export_result)) : ?>
 			<div class="notice notice-<?php echo esc_attr($export_result['type']); ?>">
