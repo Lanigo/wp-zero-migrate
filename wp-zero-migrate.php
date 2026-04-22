@@ -358,19 +358,32 @@ function wpzm_handle_export_action() {
 	$database_content .= "-- Created: " . $timestamp . "\n\n";
 
 
-// Define which tables to export.
-$tables_to_export = array(
-	$GLOBALS['wpdb']->prefix . 'options',
-	$GLOBALS['wpdb']->prefix . 'posts',
-	$GLOBALS['wpdb']->prefix . 'postmeta',
-	$GLOBALS['wpdb']->prefix . 'users',
-	$GLOBALS['wpdb']->prefix . 'usermeta',
-	$GLOBALS['wpdb']->prefix . 'terms',
-	$GLOBALS['wpdb']->prefix . 'term_taxonomy',
-	$GLOBALS['wpdb']->prefix . 'term_relationships',
-	$GLOBALS['wpdb']->prefix . 'comments',
-	$GLOBALS['wpdb']->prefix . 'commentmeta',
-);
+	// Discover all database tables that belong to this WordPress install by prefix.
+	// This keeps the export universal so plugin-created tables are included too.
+	$all_database_tables = $GLOBALS['wpdb']->get_col('SHOW TABLES');
+	$tables_to_export = array();
+
+	if (!is_array($all_database_tables)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'Failed to read database table list for export.',
+		);
+	}
+
+	foreach ($all_database_tables as $database_table_name) {
+		if (strpos($database_table_name, $GLOBALS['wpdb']->prefix) === 0) {
+			$tables_to_export[] = $database_table_name;
+		}
+	}
+
+	if (empty($tables_to_export)) {
+		return array(
+			'action'  => 'export',
+			'type'    => 'error',
+			'message' => 'No database tables matched the current WordPress prefix.',
+		);
+	}
 
 	// Export each table in order.
 	foreach ($tables_to_export as $table_name) {
