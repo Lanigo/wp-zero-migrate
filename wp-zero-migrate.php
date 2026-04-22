@@ -2407,8 +2407,17 @@ function wpzm_export_table_sql($table_name) {
 
 	$sql_content = '';
 
-	// Add table section header.
+	// Get table structure.
+	$table_structure = $wpdb->get_row("SHOW CREATE TABLE `$table_name`", ARRAY_A);
+
+	if (empty($table_structure['Create Table'])) {
+		return false;
+	}
+
+	// Add structure section.
 	$sql_content .= "-- Exporting table: " . $table_name . "\n";
+	$sql_content .= "DROP TABLE IF EXISTS `$table_name`;\n";
+	$sql_content .= $table_structure['Create Table'] . ";\n\n";
 
 	// Add insert section header.
 	$sql_content .= "-- Inserting data for table: " . $table_name . "\n";
