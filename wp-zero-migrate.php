@@ -1255,20 +1255,24 @@ function wpzm_handle_import_action() {
 	// Execute each parsed SQL statement in order, remapping table prefixes when needed.
 	foreach ($sql_statements as $index => $sql_statement) {
 
-		if (!empty($source_database_prefix) && !empty($destination_database_prefix)) {
-			$sql_statement = str_replace(
-				'`' . $source_database_prefix,
-				'`' . $destination_database_prefix,
-				$sql_statement
-			);
-		}
-
 		// Record the exact SQL statement about to run so a silent failure can be traced precisely.
 		$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
 		update_option(
 			'wpzm_import_debug_checkpoint',
 			'About to execute SQL statement #' . ($index + 1) . ': ' . $sql_preview
 		);
+
+		$source_prefix = $import_data['source_prefix'] ?? '';
+		$destination_prefix = $wpdb->prefix;
+
+		if ($source_prefix && $destination_prefix && $source_prefix !== $destination_prefix) {
+			// Replace ONLY table names that start with the source prefix
+			$sql_statement = preg_replace(
+				'/`' . preg_quote($source_prefix, '/') . '([a-zA-Z0-9_]+)`/',
+				'`' . $destination_prefix . '$1`',
+				$sql_statement
+			);
+		}
 
 		$sql_result = $wpdb->query($sql_statement);
 
