@@ -1263,12 +1263,16 @@ function wpzm_handle_import_action() {
 			);
 		}
 
+		// Record the exact SQL statement about to run so a silent failure can be traced precisely.
+		$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
+		update_option(
+			'wpzm_import_debug_checkpoint',
+			'About to execute SQL statement #' . ($index + 1) . ': ' . $sql_preview
+		);
+
 		$sql_result = $wpdb->query($sql_statement);
 
 		if ($sql_result === false) {
-			// Keep the SQL preview short so the error message is useful without becoming unreadable.
-			$sql_preview = substr(preg_replace('/\s+/', ' ', trim($sql_statement)), 0, 200);
-
 			return array(
 				'action'  => 'import',
 				'type'    => 'error',
@@ -1277,6 +1281,13 @@ function wpzm_handle_import_action() {
 		}
 
 		$executed_sql_count++;
+
+		// Keep the destination site URL anchored during SQL import so a partial
+		// options-table import does not leave the site pointing at the source URL.
+		if (strpos($sql_statement, '`' . $destination_database_prefix . 'options`') !== false) {
+			update_option('siteurl', $original_destination_site_url);
+			update_option('home', $original_destination_site_url);
+		}
 
 		// Persist the current SQL statement count so silent failures show how far import got.
 		update_option('wpzm_import_debug_checkpoint', 'Executed SQL statement #' . $executed_sql_count);
